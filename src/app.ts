@@ -1,34 +1,38 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const http = require('http');
-const path = require('path');
-const cors = require("cors")
+import 'dotenv/config';
+import express from 'express';
+import mongoose from './db';
 
-import authRoutes from './routes/authRoutes';
+// Routes 
+import userRoutes from './routes/userRoutes.routes';
+import contactUsResponsesRoutes from './routes/contactUsResponses.routes';
+import taxiFormRoutes from './routes/taxiForm.routes'; 
+import faqRoutes from './routes/faq.routes';
+import fromRoutes from './routes/from.routes';
+import toRoutes from './routes/to.routes';
+import couponRoutes from './routes/coupon.routes';
+import routeRoutes from './routes/route.routes';
+import taxiTypeRoutes from './routes/taxiType.routes';
+import taxiRoutes from './routes/taxi.routes';
+import driverRoutes from './routes/driver.routes';
 
 const app = express();
-const server = http.createServer(app);
+const PORT = process.env.PORT || 5000;
 
-// Serve static files
-app.use(express.static(path.join(__dirname, 'public')));
+mongoose.connection.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
-app.use(bodyParser.json());
+app.use(express.json());
+app.use('/users', userRoutes);
+app.use('/contact-us', contactUsResponsesRoutes);
+app.use('/taxi-forms', taxiFormRoutes);
+app.use('/faqs', faqRoutes);
+app.use('/froms', fromRoutes);
+app.use('/tos', toRoutes);
+app.use('/coupons', couponRoutes);
+app.use('/routes', routeRoutes);
+app.use('/taxi-types', taxiTypeRoutes);
+app.use('/taxis', taxiRoutes); 
+app.use('/drivers', driverRoutes); 
 
-var corsOptions = {
-  origin: '*',
-  optionsSuccessStatus: 200
-}
-app.use(cors(corsOptions))
-
-const PORT = 8080;
-
-// Connect to MongoDB
-mongoose.connect(`mongodb+srv://techmantejas:kWGzXjvq5ysUNerR@cluster0.p4uzy4h.mongodb.net/btc`);
-
-app.use('/auth', authRoutes);
-
-// Start the server
-server.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

@@ -14,6 +14,7 @@ import routeRoutes from './routes/route.routes';
 import taxiTypeRoutes from './routes/taxiType.routes';
 import taxiRoutes from './routes/taxi.routes';
 import driverRoutes from './routes/driver.routes';
+import bookingRoutes from './routes/bookings.routes'
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -32,6 +33,7 @@ app.use('/routes', routeRoutes);
 app.use('/taxi-types', taxiTypeRoutes);
 app.use('/taxis', taxiRoutes); 
 app.use('/drivers', driverRoutes); 
+app.use('/bookings', bookingRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

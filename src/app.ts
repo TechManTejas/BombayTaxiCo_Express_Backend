@@ -1,4 +1,5 @@
 import 'dotenv/config';
+import cors from 'cors';
 import express from 'express';
 import mongoose from './db';
 
@@ -17,6 +18,11 @@ import driverRoutes from './routes/driver.routes';
 import bookingRoutes from './routes/bookings.routes'
 
 const app = express();
+
+app.use(cors({
+  origin: '*',
+}));
+
 const PORT = process.env.PORT || 5000;
 
 mongoose.connection.on('error', console.error.bind(console, 'MongoDB connection error:'));

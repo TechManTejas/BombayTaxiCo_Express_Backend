@@ -5,22 +5,6 @@ import { Document, Model, Query } from 'mongoose';
 export const generateCRUDRoutes = <T extends Document>(model: Model<T>, population?: string | string[]): Router => {
   const router = express.Router();
 
-  // Function to generate a dynamic search filter for all model properties
-  const generateSearchFilter = (searchQuery: string | undefined, model: any) => {
-    const filter: any = {};
-    const properties = Object.keys(model.schema.obj);
-
-    properties.forEach(property => {
-      // Check if the property is of type string
-      if (model.schema.paths[property].instance === 'String') {
-        filter[property] = { $regex: searchQuery, $options: 'i' };
-      }
-    });
-
-    return filter;
-  };
-
-
   // Create
   router.post('/', async (req: Request, res: Response) => {
     try {
@@ -47,7 +31,24 @@ export const generateCRUDRoutes = <T extends Document>(model: Model<T>, populati
 
       // Search
       const searchQuery = req.query.search as string;
-      const searchFilter = searchQuery ? generateSearchFilter(searchQuery, model) : {};
+      const searchFilter: Record<string, any> = {};
+
+      if (searchQuery) {
+        const modelProperties = Object.keys(model.schema.paths);
+
+        const orArray = modelProperties
+          .filter((property) => {
+            const propertyType = model.schema.paths[property]?.instance;
+            return propertyType === 'String';
+          })
+          .map((property) => {
+            const regexFilter = { [property]: { $regex: new RegExp(searchQuery, 'i') } };
+            return regexFilter;
+          });
+
+        // Add the $or array to the search filter
+        searchFilter.$or = orArray;
+      }
 
       // Combine search and filter queries
       const query = { ...filter, ...searchFilter };
@@ -67,8 +68,8 @@ export const generateCRUDRoutes = <T extends Document>(model: Model<T>, populati
       const items = await itemsQuery
         .skip(skip)
         .limit(pageSize);
-        
-      res.status(200).json({ [`${model.modelName.toLowerCase()}s`]: items, total: totalCount  });
+
+      res.status(200).json({ [`${model.modelName.toLowerCase()}s`]: items, total: totalCount });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Internal Server Error' });

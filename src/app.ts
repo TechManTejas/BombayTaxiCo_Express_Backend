@@ -17,6 +17,7 @@ import taxiTypeRoutes from './routes/taxiType.routes';
 import taxiRoutes from './routes/taxi.routes';
 import driverRoutes from './routes/driver.routes';
 import bookingRoutes from './routes/bookings.routes'
+import https from "https"
 
 const app = express();
 
@@ -56,6 +57,16 @@ app.get('/.well-known/pki-validation/39DDA8E16A8150424FC88AD44C09AED0.txt', (req
   });
 });
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// Specify the paths to your SSL certificate and private key
+const privateKey = fs.readFileSync('private.key', 'utf8');
+const certificate = fs.readFileSync('certificate.crt', 'utf8');
+const ca = fs.readFileSync('ca_bundle.crt', 'utf8');
+
+const credentials = { key: privateKey, cert: certificate, ca: ca };
+
+// Create an HTTPS server
+const httpsServer = https.createServer(credentials, app);
+
+httpsServer.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT} with SSL`);
 });

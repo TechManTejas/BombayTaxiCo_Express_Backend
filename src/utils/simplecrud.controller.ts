@@ -1,8 +1,8 @@
 import express, { Router, Request, Response } from 'express';
-import mongoose, { Document, Model } from 'mongoose';
+import { Document, Model, Query } from 'mongoose';
 
 // Generic function to generate CRUD routes for a model
-export const generateCRUDRoutes = <T extends Document>(model: Model<T>): Router => {
+export const generateCRUDRoutes = <T extends Document>(model: Model<T>, population?: string | string[]): Router => {
   const router = express.Router();
 
   // Create
@@ -32,11 +32,18 @@ export const generateCRUDRoutes = <T extends Document>(model: Model<T>): Router 
       // Combine search and filter queries
       const query = { ...filter };
 
-      const items = await model
-        .find(query)
+      let itemsQuery: Query<T[], T, {}>;
+
+      // Populate specified attributes
+      if (population) {
+        itemsQuery = model.find(query).populate(population) as Query<T[], T, {}>;
+      } else {
+        itemsQuery = model.find(query) as Query<T[], T, {}>;
+      }
+
+      const items = await itemsQuery
         .skip(skip)
         .limit(pageSize);
-
       res.status(200).json({ [`${model.modelName.toLowerCase()}s`]: items });
     } catch (error) {
       console.error(error);

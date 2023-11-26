@@ -5,12 +5,31 @@ import { Document, Model, Query } from 'mongoose';
 export const generateCRUDRoutes = <T extends Document>(model: Model<T>, population?: string | string[]): Router => {
   const router = express.Router();
 
+  // Function to generate a dynamic search filter for all model properties
+  const generateSearchFilter = (searchQuery: string, model: any) => {
+    const filter: any = {};
+    const properties = Object.keys(model.schema.obj);
+  
+    properties.forEach(property => {
+      // Check if the property is of type string
+      if (model.schema.paths[property].instance === 'String') {
+        console.log(property)
+        filter[property] = { $regex: searchQuery, $options: 'i' };
+      }
+    });
+
+    console.log(filter)
+  
+    return filter;
+  };
+  
+
   // Create
   router.post('/', async (req: Request, res: Response) => {
     try {
       const newItem = new model(req.body);
       await newItem.save();
-      res.status(201).json({ message: `${model.modelName} created successfully` });
+      res.status(201).json(newItem);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Internal Server Error' });
@@ -29,8 +48,12 @@ export const generateCRUDRoutes = <T extends Document>(model: Model<T>, populati
       const filterQuery = req.query.filter;
       const filter = filterQuery ? { yourPropertyName: filterQuery } : {};
 
+      // Search
+      const searchQuery = req.query.search as string;
+      const searchFilter = generateSearchFilter(searchQuery, model);
+
       // Combine search and filter queries
-      const query = { ...filter };
+      const query = { ...filter, ...searchFilter };
 
       let itemsQuery: Query<T[], T, {}>;
 

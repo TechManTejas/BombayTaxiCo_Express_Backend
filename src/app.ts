@@ -2,6 +2,7 @@ import 'dotenv/config';
 import cors from 'cors';
 import express from 'express';
 import mongoose from './db';
+import fs from 'fs';
 
 // Routes 
 import userRoutes from './routes/userRoutes.routes';
@@ -40,6 +41,20 @@ app.use('/taxi-types', taxiTypeRoutes);
 app.use('/taxis', taxiRoutes); 
 app.use('/drivers', driverRoutes); 
 app.use('/bookings', bookingRoutes);
+
+app.get('/', (req, res) => {
+  // Assuming your text file is named 'example.txt' in the root directory
+  const filePath = '39DDA8E16A8150424FC88AD44C09AED0.txt';
+
+  fs.readFile(filePath, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Internal Server Error');
+    } else {
+      res.send(data);
+    }
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

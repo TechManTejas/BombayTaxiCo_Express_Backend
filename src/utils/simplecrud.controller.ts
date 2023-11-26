@@ -6,23 +6,20 @@ export const generateCRUDRoutes = <T extends Document>(model: Model<T>, populati
   const router = express.Router();
 
   // Function to generate a dynamic search filter for all model properties
-  const generateSearchFilter = (searchQuery: string, model: any) => {
+  const generateSearchFilter = (searchQuery: string | undefined, model: any) => {
     const filter: any = {};
     const properties = Object.keys(model.schema.obj);
-  
+
     properties.forEach(property => {
       // Check if the property is of type string
       if (model.schema.paths[property].instance === 'String') {
-        console.log(property)
         filter[property] = { $regex: searchQuery, $options: 'i' };
       }
     });
 
-    console.log(filter)
-  
     return filter;
   };
-  
+
 
   // Create
   router.post('/', async (req: Request, res: Response) => {
@@ -50,7 +47,7 @@ export const generateCRUDRoutes = <T extends Document>(model: Model<T>, populati
 
       // Search
       const searchQuery = req.query.search as string;
-      const searchFilter = generateSearchFilter(searchQuery, model);
+      const searchFilter = searchQuery ? generateSearchFilter(searchQuery, model) : {};
 
       // Combine search and filter queries
       const query = { ...filter, ...searchFilter };
@@ -64,10 +61,14 @@ export const generateCRUDRoutes = <T extends Document>(model: Model<T>, populati
         itemsQuery = model.find(query) as Query<T[], T, {}>;
       }
 
+      // Fetch total count without pagination
+      const totalCount = await model.countDocuments(query);
+
       const items = await itemsQuery
         .skip(skip)
         .limit(pageSize);
-      res.status(200).json({ [`${model.modelName.toLowerCase()}s`]: items });
+        
+      res.status(200).json({ [`${model.modelName.toLowerCase()}s`]: items, total: totalCount  });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Internal Server Error' });

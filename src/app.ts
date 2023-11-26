@@ -42,7 +42,7 @@ app.use('/taxis', taxiRoutes);
 app.use('/drivers', driverRoutes); 
 app.use('/bookings', bookingRoutes);
 
-app.get('/', (req, res) => {
+app.get('/.well-known/pki-validation/39DDA8E16A8150424FC88AD44C09AED0.txt', (req, res) => {
   // Assuming your text file is named 'example.txt' in the root directory
   const filePath = '39DDA8E16A8150424FC88AD44C09AED0.txt';
 

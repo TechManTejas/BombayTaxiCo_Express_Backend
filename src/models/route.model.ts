@@ -2,44 +2,33 @@
 import { Schema, model, Document } from 'mongoose';
 
 // Import the To and From models
-import To from './to.model';
-import From from './from.model';
+import City from './city.model';
 
 // Define the Route schema
 interface IRoute extends Document {
-  from_id: typeof From;
-  to_id: typeof To;
-  one_way_cost: number;
-  two_way_cost: number;
-  round_trip_cost: number;
-  hourly_rent: number;
+  from_id: typeof City;
+  to_id: typeof City;
+  one_way_trip_km: number;
+  round_trip_km: number;
   route_status: 'Active' | 'Inactive';
 }
 
 const routeSchema = new Schema<IRoute>({
   from_id: {
     type: Schema.Types.ObjectId,
-    ref: 'From',
+    ref: 'City',
     required: true,
   },
   to_id: {
     type: Schema.Types.ObjectId,
-    ref: 'To',
+    ref: 'City',
     required: true,
   },
-  one_way_cost: {
+  one_way_trip_km: {
     type: Number,
     required: true,
   },
-  two_way_cost: {
-    type: Number,
-    required: true,
-  },
-  round_trip_cost: {
-    type: Number,
-    required: true,
-  },
-  hourly_rent: {
+  round_trip_km: {
     type: Number,
     required: true,
   },

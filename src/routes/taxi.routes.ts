@@ -14,7 +14,7 @@ const router = express.Router();
 // router.put('/:id', taxiController.updateTaxiById);
 // router.delete('/:id', taxiController.deleteTaxiById);
 
-router.use('/', generateCRUDRoutes(Taxi))
+router.use('/', generateCRUDRoutes(Taxi, ["taxi_type_id"]))
 
 // Export the router
 export default router;

@@ -26,8 +26,8 @@ export const generateCRUDRoutes = <T extends Document>(model: Model<T>, populati
       const skip = (page - 1) * pageSize;
 
       // Filter (you can customize this based on your model's properties)
-      const filterQuery = req.query.filter;
-      const filter = filterQuery ? { yourPropertyName: filterQuery } : {};
+      const filterQuery: any = req.query.filter;
+      const filter = filterQuery ? JSON.parse(filterQuery) : {};
 
       // Search
       const searchQuery = req.query.search as string;

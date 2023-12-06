@@ -1,6 +1,6 @@
 // Import necessary libraries and modules
 import { Request, Response } from 'express';
-import From from '../models/from.model';
+import City from '../models/city.model';
 
 // Controller function for creating a From
 export const createFrom = async (req: Request, res: Response): Promise<void> => {
@@ -9,13 +9,13 @@ export const createFrom = async (req: Request, res: Response): Promise<void> => 
         const { name } = req.body;
 
         // Create a new From instance
-        const newFrom = new From({
+        const newCity = new City({
             name,
             // status defaults to 'Active'
         });
 
         // Save the From to the database
-        await newFrom.save();
+        await newCity.save();
 
         // Send a success response
         res.status(201).json({ message: 'From created successfully' });
@@ -27,7 +27,7 @@ export const createFrom = async (req: Request, res: Response): Promise<void> => 
 };
 
 // Controller function for getting all Froms with dynamic filtering
-export const getAllFroms = async (req: Request, res: Response): Promise<void> => {
+export const getAllCitys = async (req: Request, res: Response): Promise<void> => {
     try {
       // Dynamic filtering: construct filter object from query parameters
       const filter: Record<string, any> = {};
@@ -39,7 +39,7 @@ export const getAllFroms = async (req: Request, res: Response): Promise<void> =>
       }
   
       // Fetch Froms from the database based on dynamic filtering
-      const froms = await From.find(filter);
+      const froms = await City.find(filter);
   
       // Send the Froms in the response
       res.status(200).json({ froms });
@@ -51,22 +51,22 @@ export const getAllFroms = async (req: Request, res: Response): Promise<void> =>
   };
 
 // Controller function for getting a single From by ID
-export const getFromById = async (req: Request, res: Response): Promise<void> => {
+export const getCityById = async (req: Request, res: Response): Promise<void> => {
     try {
         // Extract From ID from the request parameters
         const { id } = req.params;
 
         // Find the From in the database based on the provided ID
-        const from = await From.findById(id);
+        const city = await City.findById(id);
 
         // Check if the From exists
-        if (!from) {
+        if (!city) {
             res.status(404).json({ message: 'From not found' });
             return;
         }
 
         // Send the From in the response
-        res.status(200).json({ from });
+        res.status(200).json({ from: city });
     } catch (error) {
         // Handle errors and send an error response
         console.error(error);
@@ -75,7 +75,7 @@ export const getFromById = async (req: Request, res: Response): Promise<void> =>
 };
 
 // Controller function for updating a From by ID
-export const updateFromById = async (req: Request, res: Response): Promise<void> => {
+export const updateCityById = async (req: Request, res: Response): Promise<void> => {
     try {
         // Extract From ID from the request parameters
         const { id } = req.params;
@@ -84,7 +84,7 @@ export const updateFromById = async (req: Request, res: Response): Promise<void>
         const { name, status } = req.body;
 
         // Find the From in the database based on the provided ID
-        const from = await From.findByIdAndUpdate(
+        const city = await City.findByIdAndUpdate(
             id,
             {
                 name,
@@ -94,13 +94,13 @@ export const updateFromById = async (req: Request, res: Response): Promise<void>
         );
 
         // Check if the From exists
-        if (!from) {
+        if (!city) {
             res.status(404).json({ message: 'From not found' });
             return;
         }
 
         // Send the updated From in the response
-        res.status(200).json({ message: 'From updated successfully', from });
+        res.status(200).json({ message: 'From updated successfully', city: city });
     } catch (error) {
         // Handle errors and send an error response
         console.error(error);
@@ -109,16 +109,16 @@ export const updateFromById = async (req: Request, res: Response): Promise<void>
 };
 
 // Controller function for deleting a From by ID
-export const deleteFromById = async (req: Request, res: Response): Promise<void> => {
+export const deleteCityById = async (req: Request, res: Response): Promise<void> => {
     try {
         // Extract From ID from the request parameters
         const { id } = req.params;
 
         // Find and delete the From in the database based on the provided ID
-        const deletedFrom = await From.findByIdAndDelete(id);
+        const deletedCity = await City.findByIdAndDelete(id);
 
         // Check if the From exists
-        if (!deletedFrom) {
+        if (!deletedCity) {
             res.status(404).json({ message: 'From not found' });
             return;
         }

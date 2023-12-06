@@ -1,8 +1,8 @@
 // Import necessary libraries and modules
 import express from 'express';
-import { createFrom, getAllFroms, getFromById, updateFromById, deleteFromById } from '../controllers/from.controller';
+import { createFrom, getAllCitys, getCityById, updateCityById, deleteCityById } from '../controllers/city.controller';
 import { generateCRUDRoutes } from '../utils/simplecrud.controller';
-import From from '../models/from.model';
+import City from '../models/city.model';
 
 // Create a router instance
 const router = express.Router();
@@ -14,7 +14,7 @@ const router = express.Router();
 // router.put('/:id', updateFromById);
 // router.delete('/:id', deleteFromById);
 
-router.use('/', generateCRUDRoutes(From))
+router.use('/', generateCRUDRoutes(City))
 
 // Export the router
 export default router;

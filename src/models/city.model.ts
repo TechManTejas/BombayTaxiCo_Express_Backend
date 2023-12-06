@@ -1,13 +1,13 @@
 // Import necessary libraries and modules
 import { Schema, model, Document } from 'mongoose';
 
-// Define the To schema
-interface ITo extends Document {
+// Define the From schema
+interface ICity extends Document {
   name: string;
   status: 'Active' | 'Inactive';
 }
 
-const toSchema = new Schema<ITo>({
+const citySchema = new Schema<ICity>({
   name: {
     type: String,
     required: true,
@@ -15,10 +15,10 @@ const toSchema = new Schema<ITo>({
   status: {
     type: String,
     enum: ['Active', 'Inactive'],
-    default: 'Active', 
+    default: 'Active',
   },
 });
 
-// Create and export the To model
-const To = model<ITo>('To', toSchema);
-export default To;
+// Create and export the From model
+const City = model<ICity>('City', citySchema);
+export default City;

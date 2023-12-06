@@ -3,21 +3,21 @@ import cors from 'cors';
 import express from 'express';
 import mongoose from './db';
 import fs from 'fs';
+import https from "https"
+import http from "http";
 
 // Routes 
 import userRoutes from './routes/userRoutes.routes';
 import contactUsResponsesRoutes from './routes/contactUsResponses.routes';
 import taxiFormRoutes from './routes/taxiForm.routes'; 
 import faqRoutes from './routes/faq.routes';
-import fromRoutes from './routes/from.routes';
-import toRoutes from './routes/to.routes';
+import cityRoutes from './routes/city.routes';
 import couponRoutes from './routes/coupon.routes';
 import routeRoutes from './routes/route.routes';
 import taxiTypeRoutes from './routes/taxiType.routes';
 import taxiRoutes from './routes/taxi.routes';
 import driverRoutes from './routes/driver.routes';
 import bookingRoutes from './routes/bookings.routes'
-import https from "https"
 
 const app = express();
 
@@ -34,8 +34,7 @@ app.use('/users', userRoutes);
 app.use('/contact-us', contactUsResponsesRoutes);
 app.use('/taxi-forms', taxiFormRoutes);
 app.use('/faqs', faqRoutes);
-app.use('/froms', fromRoutes);
-app.use('/tos', toRoutes);
+app.use('/citys', cityRoutes);
 app.use('/coupons', couponRoutes);
 app.use('/routes', routeRoutes);
 app.use('/taxi-types', taxiTypeRoutes);
@@ -65,8 +64,12 @@ const ca = fs.readFileSync('ca_bundle.crt', 'utf8');
 const credentials = { key: privateKey, cert: certificate, ca: ca };
 
 // Create an HTTPS server
-const httpsServer = https.createServer(credentials, app);
+const server = https.createServer(credentials, app);
 
-httpsServer.listen(PORT, () => {
+
+// Create an HTTPS server
+// const server = http.createServer(app);
+
+server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT} with SSL`);
 });

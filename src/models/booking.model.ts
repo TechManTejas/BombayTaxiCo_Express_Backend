@@ -1,35 +1,60 @@
-// BookingModel.ts
-import mongoose, { Document, Schema } from 'mongoose';
+// Import necessary libraries and modules
+import { Schema, model, Document } from 'mongoose';
 
 // Enum for booking status
-enum BookingStatus {
-  Requested = 'Requested',
-  Cancelled = 'Cancelled',
-  Declined = 'Declined',
-  TaxiAndDriverAssigned = 'Taxi and Driver Assigned',
+export enum BookingStatus {
+  New = 'New',
   Confirmed = 'Confirmed',
-  Rescheduled = 'Rescheduled',
-}
-
-// Enum for trip status
-enum TripStatus {
-  Planned = 'Planned',
-  InProgress = 'In Progress',
+  OnRide = 'On Ride',
   Completed = 'Completed',
   Cancelled = 'Cancelled',
 }
 
-// Booking schema
-const bookingSchema = new Schema({
+// Enum for trip type
+export enum TripType {
+  OneWay = 'One Way',
+  Round = 'Round',
+  Hourly = 'Hourly',
+}
+
+// Define the Booking schema
+interface IBooking extends Document {
+  route_id: Schema.Types.ObjectId;
+  user_id: Schema.Types.ObjectId;
+  coupon_id?: Schema.Types.ObjectId;
+  taxi_id?: Schema.Types.ObjectId;
+  driver_id?: Schema.Types.ObjectId;
+  requested_taxi_type: Schema.Types.ObjectId; 
+  pick_up_date: Date;
+  return_date?: Date;
+  hours_kms?: string;
+  pickup_address?: string;
+  drop_address?: string;
+  additional_request?: string;
+  payments?: Schema.Types.Mixed;
+  total_cost?: number;
+  waiting_charges?: number;
+  other_charges?: number;
+  gst?: number;
+  user_feedback?: string;
+  user_rating?: number;
+  driver_feedback?: string;
+  driver_rating?: number;
+  invoice?: Schema.Types.Mixed;
+  booking_status?: BookingStatus;
+  trip_type: TripType;
+}
+
+// Define the Booking schema
+const bookingSchema = new Schema<IBooking>({
   route_id: { type: Schema.Types.ObjectId, ref: 'Route', required: true },
   user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   coupon_id: { type: Schema.Types.ObjectId, ref: 'Coupon' },
   taxi_id: { type: Schema.Types.ObjectId, ref: 'Taxi' },
   driver_id: { type: Schema.Types.ObjectId, ref: 'Driver' },
+  requested_taxi_type: { type: Schema.Types.ObjectId, ref: 'TaxiType', required: true }, 
   pick_up_date: { type: Date, required: true },
-  pick_up_time: { type: Date, required: true },
   return_date: { type: Date },
-  return_time: { type: Date },
   hours_kms: { type: String },
   pickup_address: { type: String },
   drop_address: { type: String },
@@ -44,11 +69,10 @@ const bookingSchema = new Schema({
   driver_feedback: { type: String },
   driver_rating: { type: Number },
   invoice: { type: Schema.Types.Mixed },
-  booking_status: { type: String, enum: Object.values(BookingStatus), required: true },
-  trip_status: { type: String, enum: Object.values(TripStatus) },
+  booking_status: { type: String, enum: Object.values(BookingStatus), default: BookingStatus.New },
+  trip_type: { type: String, enum: Object.values(TripType), required: true }, 
 });
 
-// Booking model
-const Booking = mongoose.model('Booking', bookingSchema);
-
+// Create and export the Booking model
+const Booking = model<IBooking>('Booking', bookingSchema);
 export default Booking;

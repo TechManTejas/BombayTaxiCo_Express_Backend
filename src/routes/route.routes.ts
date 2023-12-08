@@ -14,7 +14,11 @@ const router = express.Router();
 // router.put('/:id', routeController.updateRouteById);
 // router.delete('/:id', routeController.deleteRouteById);
 
-router.use('/', generateCRUDRoutes(Route, ['from_id', 'to_id']))
+router.use('/', generateCRUDRoutes(Route, [
+    { path: 'from_id' },
+    { path: 'to_id' }
+  ]));
+  
 
 // Export the router
 export default router;

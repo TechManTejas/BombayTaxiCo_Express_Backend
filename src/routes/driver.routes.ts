@@ -15,7 +15,17 @@ const router = express.Router();
 // router.put('/:id', driverController.updateDriverById);
 // router.delete('/:id', driverController.deleteDriverById);
 
-router.use('/', generateCRUDRoutes(Driver))
+router.use('/', generateCRUDRoutes(Driver, [
+    {
+        path: 'assigned_trips',
+        populate: {
+            path: 'route_id',
+            populate: {
+                path: 'from_id to_id'
+            }
+        }
+    },
+]))
 
 // Export the router
 export default router;

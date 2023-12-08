@@ -1,8 +1,11 @@
 import express, { Router, Request, Response } from 'express';
-import { Document, Model, Query } from 'mongoose';
+import { Document, Model, PopulateOptions, Query } from 'mongoose';
 
 // Generic function to generate CRUD routes for a model
-export const generateCRUDRoutes = <T extends Document>(model: Model<T>, population?: string | string[]): Router => {
+export const generateCRUDRoutes = <T extends Document>(
+  model: Model<T>, 
+  population?: PopulateOptions[]
+): Router => {
   const router = express.Router();
 
   // Create

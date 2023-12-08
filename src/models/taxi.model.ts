@@ -8,6 +8,9 @@ interface ITaxi extends Document {
   taxi_no: string;
   driving_license: string;
   taxi_status: 'Available' | 'Unavailable' | 'Assigned' | 'On a Trip';
+  current_trip?: Schema.Types.ObjectId; 
+  assigned_trips: Schema.Types.ObjectId[];
+  completed_trips: Schema.Types.ObjectId[]; 
 }
 
 const taxiSchema = new Schema<ITaxi>({
@@ -30,6 +33,9 @@ const taxiSchema = new Schema<ITaxi>({
     default: 'Available',
     required: true,
   },
+  current_trip: { type: Schema.Types.ObjectId, ref: 'Booking' }, 
+  assigned_trips: [{ type: Schema.Types.ObjectId, ref: 'Booking' }],
+  completed_trips: [{ type: Schema.Types.ObjectId, ref: 'Booking' }], 
 });
 
 // Create and export the Taxi model

@@ -18,6 +18,7 @@ import taxiTypeRoutes from './routes/taxiType.routes';
 import taxiRoutes from './routes/taxi.routes';
 import driverRoutes from './routes/driver.routes';
 import bookingRoutes from './routes/bookings.routes'
+import settingsRoutes from './routes/settings.routes';
 
 const app = express();
 
@@ -37,10 +38,11 @@ app.use('/faqs', faqRoutes);
 app.use('/citys', cityRoutes);
 app.use('/coupons', couponRoutes);
 app.use('/routes', routeRoutes);
-app.use('/taxi-types', taxiTypeRoutes);
+app.use('/taxitypes', taxiTypeRoutes);
 app.use('/taxis', taxiRoutes); 
 app.use('/drivers', driverRoutes); 
 app.use('/bookings', bookingRoutes);
+app.use('/settings', settingsRoutes);
 
 app.get('/.well-known/pki-validation/39DDA8E16A8150424FC88AD44C09AED0.txt', (req, res) => {
   // Assuming your text file is named 'example.txt' in the root directory

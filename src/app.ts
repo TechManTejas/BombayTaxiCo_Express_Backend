@@ -19,6 +19,7 @@ import taxiRoutes from './routes/taxi.routes';
 import driverRoutes from './routes/driver.routes';
 import bookingRoutes from './routes/bookings.routes'
 import settingsRoutes from './routes/settings.routes';
+import paymentRoutes from './routes/payments.routes';
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use('/taxis', taxiRoutes);
 app.use('/drivers', driverRoutes); 
 app.use('/bookings', bookingRoutes);
 app.use('/settings', settingsRoutes);
+app.use('/payments', paymentRoutes);
 
 app.get('/.well-known/pki-validation/39DDA8E16A8150424FC88AD44C09AED0.txt', (req, res) => {
   // Assuming your text file is named 'example.txt' in the root directory
@@ -66,11 +68,11 @@ const ca = fs.readFileSync('ca_bundle.crt', 'utf8');
 const credentials = { key: privateKey, cert: certificate, ca: ca };
 
 // Create an HTTPS server
-const server = https.createServer(credentials, app);
+// const server = https.createServer(credentials, app);
 
 
 // Create an HTTPS server
-// const server = http.createServer(app);
+const server = http.createServer(app);
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT} with SSL`);

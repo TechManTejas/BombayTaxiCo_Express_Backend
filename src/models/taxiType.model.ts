@@ -12,6 +12,7 @@ export interface ITaxiType extends Document {
   price_km: number;
   price_hour: number;
   extra_km_charges: number;
+  discount_percentage: number;
   car_features: ICarFeature[];
 }
 
@@ -39,9 +40,17 @@ const taxiTypeSchema = new Schema<ITaxiType>({
     type: Number,
     required: true,
   },
+  discount_percentage: {
+    type: Number,
+    default: 0,
+    validate: {
+      validator: (value: number) => value >= 0 && value <= 100,
+      message: 'Discount percentage must be between 0 and 100',
+    },
+  },
   car_features: {
     type: [carFeatureSchema],
-    default: [],              
+    default: [],
   },
 });
 

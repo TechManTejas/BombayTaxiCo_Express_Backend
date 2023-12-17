@@ -7,6 +7,7 @@ import https from "https"
 import http from "http";
 
 // Routes 
+import searchRoutes from './routes/search.routes';
 import userRoutes from './routes/userRoutes.routes';
 import contactUsResponsesRoutes from './routes/contactUsResponses.routes';
 import taxiFormRoutes from './routes/taxiForm.routes'; 
@@ -32,6 +33,7 @@ const PORT = process.env.PORT || 5000;
 mongoose.connection.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 app.use(express.json());
+app.use('/', searchRoutes);
 app.use('/users', userRoutes);
 app.use('/contact-us', contactUsResponsesRoutes);
 app.use('/taxi-forms', taxiFormRoutes);

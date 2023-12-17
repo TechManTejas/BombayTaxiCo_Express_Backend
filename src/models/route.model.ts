@@ -5,7 +5,7 @@ import { Schema, model, Document } from 'mongoose';
 import City from './city.model';
 
 // Define the Route schema
-interface IRoute extends Document {
+export interface IRoute extends Document {
   from_id: typeof City;
   to_id: typeof City;
   one_way_trip_km: number;

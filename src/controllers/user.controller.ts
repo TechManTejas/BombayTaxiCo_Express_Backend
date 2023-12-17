@@ -9,6 +9,8 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
     // Extract user details from the request body
     const { mobile_no, email_id, name } = req.body;
 
+    console.log(req.body);
+
     // Create a new user instance
     const newUser = new User({
       mobile_no,

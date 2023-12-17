@@ -6,8 +6,7 @@ const router = express.Router();
 
 router.post('/search', async (req: Request, res: Response) => {
   try {
-    const { tripType, fromId, toId, pickupDate, pickupTime } = req.body;
-    console.log(req.body);
+    const { tripType, fromId, toId, pickupDate, pickupTime, returnDate } = req.body;
 
     // Find the route based on fromId and toId
     const route: IRoute | null = await Route.findOne({ from_id: fromId, to_id: toId, route_status: 'Active' });
@@ -22,7 +21,7 @@ router.post('/search', async (req: Request, res: Response) => {
 
     // Calculate rates for each taxi type
     const rates = taxiTypes.map((taxiType: ITaxiType) => {
-      const distance = tripType === 'oneWay' ? route.one_way_trip_km : route.round_trip_km;
+      const distance = tripType === 'One-Way Trip' ? route.one_way_trip_km : route.round_trip_km;
       const originalPrice = distance * taxiType.price_km;
 
       // Calculate discounted price based on discount_percentage

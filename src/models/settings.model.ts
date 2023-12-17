@@ -12,6 +12,7 @@ interface ISettings extends Document {
     waitingChargesPerMinute: string;
     nightChargePerDay: string;
     extraPickupDropCharges: string;
+    advancePaymentPercentage: string;
 }
 
 const settingsSchema = new Schema<ISettings>({
@@ -48,6 +49,10 @@ const settingsSchema = new Schema<ISettings>({
         required: true,
     },
     extraPickupDropCharges: {
+        type: String,
+        required: true,
+    },
+    advancePaymentPercentage: {
         type: String,
         required: true,
     },

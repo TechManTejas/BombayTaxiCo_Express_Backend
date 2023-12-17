@@ -12,9 +12,9 @@ export enum BookingStatus {
 
 // Enum for trip type
 export enum TripType {
-  OneWay = 'One Way',
-  Round = 'Round',
-  Hourly = 'Hourly',
+  OneWay = 'One-Way Trip',
+  Round = 'Round Trip',
+  Hourly = 'Hourly Rental',
 }
 
 // Define the Booking schema

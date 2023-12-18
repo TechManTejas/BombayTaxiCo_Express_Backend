@@ -3,78 +3,125 @@ import { Request, Response } from 'express';
 import Booking, { BookingStatus } from '../models/booking.model';
 import Driver from '../models/driver.model';
 import Taxi from '../models/taxi.model';
+import jwt from 'jsonwebtoken';
+import mongoose, { Query } from 'mongoose';
 
-// Create booking
-export const createBooking = async (req: Request, res: Response) => {
+// Function to get bookings associated with the user with pagination, search, and filter
+export const getUserBookings = async (req: Request, res: Response) => {
   try {
-    const newBooking = new Booking(req.body);
-    await newBooking.save();
-    res.status(201).json({ message: 'Booking created successfully' });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-};
+    // Extract the token from the request headers
+    const token = req.headers.authorization;
 
-// Read all bookings
-export const getAllBookings = async (req: Request, res: Response) => {
-  try {
-    const bookings = await Booking.find();
-    res.status(200).json({ bookings });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-};
-
-// Read booking by ID
-export const getBookingById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const booking = await Booking.findById(id);
-
-    if (!booking) {
-      res.status(404).json({ message: 'Booking not found' });
-      return;
+    if (!token) {
+      return res.status(401).json({ message: 'Unauthorized: No token provided' });
     }
 
-    res.status(200).json({ booking });
+    // Decode the token to get user information
+    const decodedToken: any = jwt.verify(token, `${process.env.JWT_SECRET_KEY}`); // Replace 'your_secret_key' with your actual secret key
+
+    // Get user ID from decoded token
+    const userId = decodedToken.userId;
+
+    // Pagination
+    const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
+    const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string, 10) : 10;
+    const skip = (page - 1) * pageSize;
+
+    // Filter (customize this based on your model's properties)
+    const filterQuery: any = req.query.filter;
+    const filter = filterQuery ? JSON.parse(filterQuery) : {};
+
+    // Search
+    const searchQuery = req.query.search as string;
+    const searchFilter: Record<string, any> = {};
+
+    if (searchQuery) {
+      const modelProperties = Object.keys(Booking.schema.paths); // Assuming 'Booking' is the model for bookings
+
+      const orArray = modelProperties
+        .filter((property) => {
+          const propertyType = Booking.schema.paths[property]?.instance;
+          return propertyType === 'String';
+        })
+        .map((property) => {
+          const regexFilter = { [property]: { $regex: new RegExp(searchQuery, 'i') } };
+          return regexFilter;
+        });
+
+      // Add the $or array to the search filter
+      searchFilter.$or = orArray;
+    }
+
+    const populateOptions = [
+      { path: 'route_id', populate: { path: 'from_id to_id' } },
+      { path: 'user_id' },
+      { path: 'driver_id' },
+      { path: 'taxi_id', populate: { path: 'taxi_type_id' } },
+      { path: 'coupon_id' },
+      { path: 'requested_taxi_type' },
+    ];
+
+    const populationQuery = populateOptions.map((option) => ({ path: option.path, populate: option.populate }));
+
+    const query = { user_id: userId, ...filter, ...searchFilter };
+
+    const itemsQuery = Booking.find(query).lean().populate(populationQuery) as Query<any[], any, {}>;
+
+    const totalCount = await Booking.countDocuments(query);
+
+    const items = await itemsQuery.skip(skip).limit(pageSize);
+
+    res.status(200).json({ bookings: items, total: totalCount });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });
   }
 };
 
-// Update booking by ID
-export const updateBookingById = async (req: Request, res: Response) => {
+export const getUserBookingStatusCounts = async (req: Request, res: Response) => {
   try {
-    const { id } = req.params;
-    const updatedBooking = await Booking.findByIdAndUpdate(id, req.body, { new: true });
+    // Extract the token from the request headers
+    const token = req.headers.authorization;
 
-    if (!updatedBooking) {
-      res.status(404).json({ message: 'Booking not found' });
-      return;
+    if (!token) {
+      return res.status(401).json({ message: 'Unauthorized: No token provided' });
     }
 
-    res.status(200).json({ message: 'Booking updated successfully', booking: updatedBooking });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
-  }
-};
+    // Decode the token to get user information
+    const decodedToken: any = jwt.verify(token, `${process.env.JWT_SECRET_KEY}`);
 
-// Delete booking by ID
-export const deleteBookingById = async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-    const deletedBooking = await Booking.findByIdAndDelete(id);
+    // Get user ID from decoded token
+    const userId = decodedToken.userId;
 
-    if (!deletedBooking) {
-      res.status(404).json({ message: 'Booking not found' });
-      return;
-    }
+    // Use Mongoose aggregation to count documents based on booking_status for the specific user
+    const result = await Booking.aggregate([
+      {
+        $match: { user_id: new mongoose.Types.ObjectId(userId) },
+      },
+      {
+        $group: {
+          _id: '$booking_status',
+          count: { $sum: 1 },
+        },
+      },
+    ]);
 
-    res.status(200).json({ message: 'Booking deleted successfully' });
+    console.log(result);
+
+    // Create a record object with booking_status as keys and count as values
+    const statusCounts: Record<string, number> = {};
+    let totalCount = 0;
+
+    result.forEach((item: any) => {
+      // Convert _id to string and assign count
+      statusCounts[item._id.toString()] = item.count;
+      totalCount += item.count;
+    });
+
+    // Include an "All" attribute with the total count
+    statusCounts['All'] = totalCount;
+
+    res.status(200).json(statusCounts);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Internal Server Error' });

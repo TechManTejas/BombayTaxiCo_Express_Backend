@@ -8,13 +8,12 @@ import { generateCRUDRoutes } from '../utils/simplecrud.controller';
 const router: Router = express.Router();
 
 // Define routes
-// router.post('/', BookingController.createBooking);
-// router.get('/', BookingController.getAllBookings);
-// router.get('/:id', BookingController.getBookingById);
-// router.put('/:id', BookingController.updateBookingById);
-// router.delete('/:id', BookingController.deleteBookingById);
 
 router.get('/booking-status-counts', BookingController.getBookingStatusCounts);
+
+router.get('/user-booking-status-counts', BookingController.getUserBookingStatusCounts);
+
+router.get('/user-bookings', BookingController.getUserBookings);
 
 router.post('/assign-taxi-driver', BookingController.assignTaxiDriver);
 

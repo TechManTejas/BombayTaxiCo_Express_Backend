@@ -53,6 +53,7 @@ export const getUserBookings = async (req: Request, res: Response) => {
     }
 
     const populateOptions = [
+      { path: 'pickup_city' },
       { path: 'route_id', populate: { path: 'from_id to_id' } },
       { path: 'user_id' },
       { path: 'driver_id' },

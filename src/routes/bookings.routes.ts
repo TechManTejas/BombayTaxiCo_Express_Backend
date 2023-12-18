@@ -22,6 +22,7 @@ router.post('/start-trip', BookingController.startTrip);
 router.post('/end-trip', BookingController.endTrip);
 
 router.use('/', generateCRUDRoutes(Booking, [
+    { path: 'pickup_city' },
     { path: 'route_id', populate: { path: 'from_id to_id' } },
     { path: 'user_id' },
     { path: 'driver_id'},

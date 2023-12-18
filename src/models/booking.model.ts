@@ -19,13 +19,15 @@ export enum TripType {
 
 // Define the Booking schema
 interface IBooking extends Document {
-  route_id: Schema.Types.ObjectId;
+  pickup_city?: Schema.Types.ObjectId,
+  route_id?: Schema.Types.ObjectId;
   user_id: Schema.Types.ObjectId;
   coupon_id?: Schema.Types.ObjectId;
   taxi_id?: Schema.Types.ObjectId;
   driver_id?: Schema.Types.ObjectId;
   requested_taxi_type: Schema.Types.ObjectId; 
   pick_up_date: Date;
+  pick_up_time: string;
   return_date?: Date;
   hours_kms?: string;
   pickup_address?: string;
@@ -47,13 +49,15 @@ interface IBooking extends Document {
 
 // Define the Booking schema
 const bookingSchema = new Schema<IBooking>({
-  route_id: { type: Schema.Types.ObjectId, ref: 'Route', required: true },
+  pickup_city: { type: Schema.Types.ObjectId, ref: 'City' },
+  route_id: { type: Schema.Types.ObjectId, ref: 'Route' },
   user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   coupon_id: { type: Schema.Types.ObjectId, ref: 'Coupon' },
   taxi_id: { type: Schema.Types.ObjectId, ref: 'Taxi' },
   driver_id: { type: Schema.Types.ObjectId, ref: 'Driver' },
   requested_taxi_type: { type: Schema.Types.ObjectId, ref: 'TaxiType', required: true }, 
   pick_up_date: { type: Date, required: true },
+  pick_up_time: { type: String },
   return_date: { type: Date },
   hours_kms: { type: String },
   pickup_address: { type: String },

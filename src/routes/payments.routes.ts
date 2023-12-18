@@ -1,5 +1,4 @@
 import express from 'express';
-import bodyParser from 'body-parser';
 import crypto from 'crypto'
 import { razorpay } from '../payments/razorpay';
 import Route from '../models/route.model';
@@ -7,46 +6,55 @@ import TaxiType from '../models/taxiType.model';
 import axios from 'axios';
 import Booking from '../models/booking.model';
 import jwt, { JwtPayload } from 'jsonwebtoken';
+import SingletonSettings from '../models/settings.model';
 
 // Create a router instance
 const router = express.Router();
 
 router.post("/orders", async (req, res) => {
 
-    const { route_id, requested_taxi_type, payment, trip_type, pickup_date, pickup_time, return_date } = req.body;
+    const { route_id, requested_taxi_type, payment, trip_type, pick_up_date, return_date, hourly_package } = req.body;
 
     console.log(req.body)
 
     try {
 
-        // Fetch route details
-        const route = await Route.findById(route_id);
-        if (!route) return res.status(400).json({ msg: "Invalid route ID" });
+        let route
 
         // Fetch taxi type details
         const taxiType = await TaxiType.findById(requested_taxi_type);
         if (!taxiType) return res.status(400).json({ msg: "Invalid taxi type ID" });
 
         // Fetch settings
-        const settingsResponse = await axios.get('http://localhost:5000/settings/get');
+        const settingsResponse = await axios.get('https://0.0.0.0:5000/settings/get');
         const settings = settingsResponse.data;
-
         if (!settings) return res.status(500).json({ msg: "Settings not found" });
 
+
         // Calculate amount based on route and taxi type
-        const distance =
-            trip_type === 'Round Trip'
-                ? route?.round_trip_km || 0
-                : trip_type === 'Hourly Rental'
-                    ? 0
-                    : route?.one_way_trip_km || 0;
+        let distance = 0, amount = 0;
 
-        const pricePerKm = taxiType.price_km;
-        const discountPercentage = taxiType.discount_percentage;
+        if (trip_type === "Hourly Rental") {
+            const [hours, _, kms, __] = hourly_package.split(' ').map((value: string) => parseInt(value));
+            distance = kms; // For hourly rental, distance is based on kms
+            amount = distance * taxiType.price_km;
+        } else {
+            // Fetch route details
+            route = await Route.findById(route_id);
+            if (!route) return res.status(400).json({ msg: "Invalid route ID" });
 
-        let amount = distance * pricePerKm;
+            if (trip_type === 'Round Trip') {
+                const daysDifference = Math.ceil(((new Date(return_date) as any) - (new Date(pick_up_date) as any)) / (1000 * 60 * 60 * 24));
+                distance = route?.round_trip_km || 0;
+                amount = ((distance / 2) * (daysDifference + 1)) * taxiType.price_km;
+            } else {
+                distance =  route?.one_way_trip_km || 0;
+                amount = distance * taxiType.price_km;
+            }
+        }
 
         // Apply discount if applicable
+        const discountPercentage = taxiType.discount_percentage;
         if (discountPercentage > 0) {
             const discountAmount = (amount * discountPercentage) / 100;
             amount -= discountAmount;
@@ -54,7 +62,7 @@ router.post("/orders", async (req, res) => {
 
         // Apply advance payment percentage if payment type is advance
         if (payment === "advance") {
-            amount = Math.round(amount * ((100 - parseInt(settings?.advancePaymentPercentage || '0')) / 100));
+            amount = Math.round(amount * ((parseInt(settings?.advancePaymentPercentage || '0')) / 100));
         }
 
         const options = {
@@ -113,8 +121,11 @@ router.post("/success", async (req, res) => {
         const newBooking = new Booking({
             user_id: userId,
             route_id: booking.route_id,
+            pickup_city: booking.pickup_city,
+            hours_kms: booking.hourly_package,
             pick_up_date: booking.pick_up_date,
             pick_up_time: booking.pick_up_time,
+            return_date: booking.return_date,
             pickup_address: booking.pickup_address,
             drop_address: booking.drop_address,
             trip_type: booking.trip_type,

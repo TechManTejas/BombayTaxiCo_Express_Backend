@@ -2,7 +2,7 @@
 import { Schema, model, Document } from 'mongoose';
 
 // Define the Settings schema
-interface ISettings extends Document {
+export interface ISettings extends Document {
     baseFare: string;
     gst: string;
     stateTollTax: string;

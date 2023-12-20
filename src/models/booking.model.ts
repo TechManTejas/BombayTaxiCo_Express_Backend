@@ -34,14 +34,11 @@ interface IBooking extends Document {
   drop_address?: string;
   additional_request?: string;
   payments?: Schema.Types.Mixed;
+  base_fare?: number;
   total_cost?: number;
   waiting_charges?: number;
   other_charges?: number;
   gst?: number;
-  user_feedback?: string;
-  user_rating?: number;
-  driver_feedback?: string;
-  driver_rating?: number;
   invoice?: Schema.Types.Mixed;
   booking_status?: BookingStatus;
   trip_type: TripType;
@@ -64,14 +61,11 @@ const bookingSchema = new Schema<IBooking>({
   drop_address: { type: String },
   additional_request: { type: String },
   payments: { type: Schema.Types.Mixed },
-  total_cost: { type: Number },
+  base_fare: { type: Number },
   waiting_charges: { type: Number },
   other_charges: { type: Number },
   gst: { type: Number },
-  user_feedback: { type: String },
-  user_rating: { type: Number, min: 1, max: 5 },
-  driver_feedback: { type: String },
-  driver_rating: { type: Number },
+  total_cost: { type: Number },
   invoice: { type: Schema.Types.Mixed },
   booking_status: { type: String, enum: Object.values(BookingStatus), default: BookingStatus.New },
   trip_type: { type: String, enum: Object.values(TripType), required: true }, 

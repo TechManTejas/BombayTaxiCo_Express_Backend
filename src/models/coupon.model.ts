@@ -2,7 +2,7 @@
 import { Schema, model, Document } from 'mongoose';
 
 // Define the Coupon schema
-interface ICoupon extends Document {
+export interface ICoupon extends Document {
   name: string;
   discount_perc: number;
   from_date: Date;

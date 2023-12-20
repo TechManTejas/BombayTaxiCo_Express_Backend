@@ -7,13 +7,14 @@ import axios from 'axios';
 import Booking from '../models/booking.model';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import SingletonSettings from '../models/settings.model';
+import Coupon, { ICoupon } from '../models/coupon.model';
 
 // Create a router instance
 const router = express.Router();
 
 router.post("/orders", async (req, res) => {
 
-    const { route_id, requested_taxi_type, payment, trip_type, pick_up_date, return_date, hourly_package } = req.body;
+    const { route_id, requested_taxi_type, payment, trip_type, pick_up_date, return_date, hourly_package, coupon_id } = req.body;
 
     console.log(req.body)
 
@@ -26,7 +27,7 @@ router.post("/orders", async (req, res) => {
         if (!taxiType) return res.status(400).json({ msg: "Invalid taxi type ID" });
 
         // Fetch settings
-        const settingsResponse = await axios.get('https://0.0.0.0:5000/settings/get');
+        const settingsResponse = await axios.get('http://0.0.0.0:5000/settings/get');
         const settings = settingsResponse.data;
         if (!settings) return res.status(500).json({ msg: "Settings not found" });
 
@@ -63,6 +64,13 @@ router.post("/orders", async (req, res) => {
         // Apply advance payment percentage if payment type is advance
         if (payment === "advance") {
             amount = Math.round(amount * ((parseInt(settings?.advancePaymentPercentage || '0')) / 100));
+        } else if (coupon_id) {
+            // Apply coupon discount and round off the amount with no decimal values
+            const coupon: ICoupon | null = await Coupon.findById(coupon_id);
+            if (coupon) {
+                const couponDiscount = Math.round((amount * coupon.discount_perc) / 100);
+                amount -= couponDiscount;
+            }
         }
 
         const options = {
@@ -112,8 +120,6 @@ router.post("/success", async (req, res) => {
         const decodedToken = jwt.verify(token, process.env.JWT_SECRET_KEY || 'your_jwt_secret') as JwtPayload; // Replace 'your_jwt_secret' with your actual JWT secret
         const userId = decodedToken.userId;
 
-        console.log(userId)
-
         // THE PAYMENT IS LEGIT & VERIFIED
         // YOU CAN SAVE THE DETAILS IN YOUR DATABASE IF YOU WANT
         // THE PAYMENT IS LEGIT & VERIFIED
@@ -138,7 +144,10 @@ router.post("/success", async (req, res) => {
                     razorpayOrderId: razorpayOrderId,
                     razorpaySignature: razorpaySignature
                 }
-            ]
+            ],
+            coupon_id: booking.coupon_id,
+            base_fare: booking.base_fare
+            
         });
         console.log(newBooking)
 

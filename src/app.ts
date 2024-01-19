@@ -54,9 +54,9 @@ app.use('/settings', settingsRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/invoices', invoiceRoutes);
 
-app.get('/.well-known/pki-validation/39DDA8E16A8150424FC88AD44C09AED0.txt', (req, res) => {
+app.get('/.well-known/pki-validation/92DEEA071D42831652A0219C623EF653.txt', (req, res) => {
   // Assuming your text file is named 'example.txt' in the root directory
-  const filePath = '39DDA8E16A8150424FC88AD44C09AED0.txt';
+  const filePath = '92DEEA071D42831652A0219C623EF653.txt';
 
   fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) {
@@ -76,11 +76,11 @@ const ca = fs.readFileSync('ca_bundle.crt', 'utf8');
 const credentials = { key: privateKey, cert: certificate, ca: ca };
 
 // Create an HTTPS server
-const server = https.createServer(credentials, app);
+// const server = https.createServer(credentials, app);
 
 
 // Create an HTTPS server
-// const server = http.createServer(app);
+const server = http.createServer(app);
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT} with SSL`);

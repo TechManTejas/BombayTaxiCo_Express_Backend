@@ -3,7 +3,7 @@ import { Schema, model, Document } from 'mongoose';
 import { ITaxiType } from './taxiType.model';
 
 // Define the Taxi schema
-interface ITaxi extends Document {
+export interface ITaxi extends Document {
   taxi_type_id: ITaxiType['_id'];
   taxi_no: string;
   driving_license: string;

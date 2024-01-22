@@ -18,7 +18,7 @@ export enum TripType {
 }
 
 // Define the Booking schema
-interface IBooking extends Document {
+export interface IBooking extends Document {
   pickup_city?: Schema.Types.ObjectId,
   route_id?: Schema.Types.ObjectId;
   user_id: Schema.Types.ObjectId;
@@ -42,6 +42,7 @@ interface IBooking extends Document {
   invoice?: Schema.Types.Mixed;
   booking_status?: BookingStatus;
   trip_type: TripType;
+  notified: boolean;
 }
 
 // Define the Booking schema
@@ -69,6 +70,7 @@ const bookingSchema = new Schema<IBooking>({
   invoice: { type: Schema.Types.Mixed },
   booking_status: { type: String, enum: Object.values(BookingStatus), default: BookingStatus.New },
   trip_type: { type: String, enum: Object.values(TripType), required: true }, 
+  notified: { type: Boolean, default: false },
 });
 
 // Create and export the Booking model

@@ -2,7 +2,7 @@
 import { Schema, model, Document } from 'mongoose';
 
 // Define the User schema
-interface IUser extends Document {
+export interface IUser extends Document {
   mobile_no: string;
   email_id: string;
   name: string;

@@ -2,7 +2,7 @@
 import { Schema, model, Document } from 'mongoose';
 
 // Define the Driver schema
-interface IDriver extends Document {
+export interface IDriver extends Document {
   name: string;
   mobile_no: string;
   email_id: string;

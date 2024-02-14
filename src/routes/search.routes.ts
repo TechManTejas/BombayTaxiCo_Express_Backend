@@ -47,7 +47,7 @@ router.post('/search', async (req: Request, res: Response) => {
       const originalPrice = totalDistance * taxiType.price_km;
       // Calculate discounted price based on discount_percentage
       const discountPercentage = taxiType.discount_percentage || 0;
-      const discountedPrice = originalPrice * ((100 - discountPercentage) / 100);
+      const discountedPrice = Math.ceil(originalPrice * ((100 - discountPercentage) / 100));
 
       return {
         taxiType: taxiType,

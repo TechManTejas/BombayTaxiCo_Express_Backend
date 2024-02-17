@@ -1,6 +1,7 @@
 import express, { Request, Response } from 'express';
 import Route, { IRoute } from '../models/route.model';
 import TaxiType, { ITaxiType } from '../models/taxiType.model';
+import axios from 'axios';
 
 const router = express.Router();
 
@@ -30,12 +31,18 @@ router.post('/search', async (req: Request, res: Response) => {
         return res.json({ taxi_rates: [], route: null }); // Return empty taxi rates and null route
       }
 
+      // Fetch settings
+      const settingsResponse = await axios.get('https://43.204.227.16:5000/settings/get');
+      const settings = settingsResponse.data;
+      const minimumBillableKm = parseInt(settings.minimumBillableKm)
+      if (!settings) return res.status(500).json({ msg: "Settings not found" });
+
       const isRoundTrip = tripType === 'Round Trip';
       const distance = isRoundTrip ? route.round_trip_km : route.one_way_trip_km;
       // Calculate the difference in days between pickupDate and returnDate for round trips
       const dateDifference = isRoundTrip ? Math.ceil(((new Date(returnDate) as any) - (new Date(pickupDate) as any)) / (1000 * 60 * 60 * 24)) : 0;
       // Multiply the distance by the date difference for round trips
-      totalDistance = isRoundTrip ? (distance / 2) * (dateDifference + 1) : distance;
+      totalDistance = isRoundTrip ? Math.max((dateDifference + 1) * minimumBillableKm, distance) : distance;
     }
 
     // Get all taxi types

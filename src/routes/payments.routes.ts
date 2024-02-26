@@ -49,7 +49,7 @@ router.post("/orders", async (req, res) => {
                 distance = route?.round_trip_km || 0;
                 amount = ((distance / 2) * (daysDifference + 1)) * taxiType.price_km;
             } else {
-                distance =  route?.one_way_trip_km || 0;
+                distance = route?.one_way_trip_km || 0;
                 amount = distance * taxiType.price_km;
             }
         }
@@ -146,8 +146,19 @@ router.post("/success", async (req, res) => {
                 }
             ],
             coupon_id: booking.coupon_id,
-            base_fare: booking.base_fare
-            
+            base_fare: booking.base_fare,
+            numberOfPassengers: booking.numberOfPassengers,
+            numberOfSmallBags: booking.numberOfSmallBags,
+            numberOfLargeBags: booking.numberOfLargeBags,
+            seniorCitizen: booking.seniorCitizen,
+            womenTraveling: booking.womenTraveling,
+            kidsOnBoard: booking.kidsOnBoard,
+            englishSpeakingDriver: booking.englishSpeakingDriver,
+            carryingPet: booking.carryingPet,
+            need7Plus1Seater: booking.need7Plus1Seater,
+            carrierOverTop: booking.carrierOverTop,
+            bookingForSomeoneElse: booking.bookingForSomeoneElse,
+            otherDetails: booking.otherDetails
         });
         console.log(newBooking)
 

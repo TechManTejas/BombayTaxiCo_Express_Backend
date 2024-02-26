@@ -25,7 +25,7 @@ export interface IBooking extends Document {
   coupon_id?: Schema.Types.ObjectId;
   taxi_id?: Schema.Types.ObjectId;
   driver_id?: Schema.Types.ObjectId;
-  requested_taxi_type: Schema.Types.ObjectId; 
+  requested_taxi_type: Schema.Types.ObjectId;
   pick_up_date: Date;
   pick_up_time: string;
   return_date?: Date;
@@ -43,6 +43,18 @@ export interface IBooking extends Document {
   booking_status?: BookingStatus;
   trip_type: TripType;
   notified: boolean;
+  numberOfPassengers: string,
+  numberOfSmallBags: string,
+  numberOfLargeBags: string,
+  seniorCitizen: boolean,
+  womenTraveling: boolean,
+  kidsOnBoard: boolean,
+  englishSpeakingDriver: boolean,
+  carryingPet: boolean,
+  need7Plus1Seater: boolean,
+  carrierOverTop: boolean,
+  bookingForSomeoneElse: boolean,
+  otherDetails: string
 }
 
 // Define the Booking schema
@@ -53,7 +65,7 @@ const bookingSchema = new Schema<IBooking>({
   coupon_id: { type: Schema.Types.ObjectId, ref: 'Coupon' },
   taxi_id: { type: Schema.Types.ObjectId, ref: 'Taxi' },
   driver_id: { type: Schema.Types.ObjectId, ref: 'Driver' },
-  requested_taxi_type: { type: Schema.Types.ObjectId, ref: 'TaxiType', required: true }, 
+  requested_taxi_type: { type: Schema.Types.ObjectId, ref: 'TaxiType', required: true },
   pick_up_date: { type: Date, required: true },
   pick_up_time: { type: String },
   return_date: { type: Date },
@@ -69,8 +81,20 @@ const bookingSchema = new Schema<IBooking>({
   total_cost: { type: Number },
   invoice: { type: Schema.Types.Mixed },
   booking_status: { type: String, enum: Object.values(BookingStatus), default: BookingStatus.New },
-  trip_type: { type: String, enum: Object.values(TripType), required: true }, 
+  trip_type: { type: String, enum: Object.values(TripType), required: true },
   notified: { type: Boolean, default: false },
+  numberOfPassengers: { type: String },
+  numberOfSmallBags: { type: String },
+  numberOfLargeBags: { type: String },
+  seniorCitizen: { type: Boolean, default: false },
+  womenTraveling: { type: Boolean, default: false },
+  kidsOnBoard: { type: Boolean, default: false },
+  englishSpeakingDriver: { type: Boolean, default: false },
+  carryingPet: { type: Boolean, default: false },
+  need7Plus1Seater: { type: Boolean, default: false },
+  carrierOverTop: { type: Boolean, default: false },
+  bookingForSomeoneElse: { type: Boolean, default: false },
+  otherDetails: { type: String },
 });
 
 // Create and export the Booking model

@@ -10,6 +10,7 @@ import bodyParser from 'body-parser';
 // Routes 
 import searchRoutes from './routes/search.routes';
 import userRoutes from './routes/userRoutes.routes';
+import adminRoutes from './routes/admins.routes';
 import contactUsResponsesRoutes from './routes/contactUsResponses.routes';
 import taxiFormRoutes from './routes/taxiForm.routes'; 
 import faqRoutes from './routes/faq.routes';
@@ -41,6 +42,7 @@ mongoose.connection.on('error', console.error.bind(console, 'MongoDB connection 
 app.use(express.json());
 app.use('/', searchRoutes);
 app.use('/users', userRoutes);
+app.use('/admins', adminRoutes);
 app.use('/contact-us', contactUsResponsesRoutes);
 app.use('/taxi-forms', taxiFormRoutes);
 app.use('/faqs', faqRoutes);

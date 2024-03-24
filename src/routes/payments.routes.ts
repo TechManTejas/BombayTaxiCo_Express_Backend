@@ -96,7 +96,8 @@ router.post("/success", async (req, res) => {
             razorpayPaymentId,
             razorpayOrderId,
             razorpaySignature,
-            booking
+            booking,
+            amount
         } = req.body;
 
         console.log(req.body);
@@ -127,7 +128,6 @@ router.post("/success", async (req, res) => {
         const newBooking = new Booking({
             user_id: userId,
             route_id: booking.route_id,
-            pickup_city: booking.pickup_city,
             hours_kms: booking.hourly_package,
             pick_up_date: booking.pick_up_date,
             pick_up_time: booking.pick_up_time,
@@ -139,6 +139,7 @@ router.post("/success", async (req, res) => {
             payments: [
                 {
                     payment: booking.payment,
+                    amount: amount,
                     orderCreationId: orderCreationId,
                     razorpayPaymentId: razorpayPaymentId,
                     razorpayOrderId: razorpayOrderId,

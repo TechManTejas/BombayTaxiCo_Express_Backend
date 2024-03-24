@@ -19,7 +19,6 @@ export enum TripType {
 
 // Define the Booking schema
 export interface IBooking extends Document {
-  pickup_city?: Schema.Types.ObjectId,
   route_id?: Schema.Types.ObjectId;
   user_id: Schema.Types.ObjectId;
   coupon_id?: Schema.Types.ObjectId;
@@ -59,7 +58,6 @@ export interface IBooking extends Document {
 
 // Define the Booking schema
 const bookingSchema = new Schema<IBooking>({
-  pickup_city: { type: Schema.Types.ObjectId, ref: 'City' },
   route_id: { type: Schema.Types.ObjectId, ref: 'Route' },
   user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   coupon_id: { type: Schema.Types.ObjectId, ref: 'Coupon' },

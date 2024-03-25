@@ -25,6 +25,7 @@ import settingsRoutes from './routes/settings.routes';
 import paymentRoutes from './routes/payments.routes';
 import invoiceRoutes from './routes/invoices.routes';
 import startBookingSMSCron from './crons/booking_sms';
+import { sendEmail } from './email/sendEmail';
 
 const app = express();
 
@@ -56,6 +57,18 @@ app.use('/bookings', bookingRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/payments', paymentRoutes);
 app.use('/invoices', invoiceRoutes);
+app.post('/send-email', async (req, res) => {
+  try {
+    await sendEmail({
+      subject: req.body.subject,
+      message: req.body.message,
+    });
+    res.send({ message: 'Email sent successfully.' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: 'Failed to send email.' });
+  }
+});
 
 app.get('/.well-known/pki-validation/92DEEA071D42831652A0219C623EF653.txt', (req, res) => {
   // Assuming your text file is named 'example.txt' in the root directory
@@ -79,11 +92,11 @@ const ca = fs.readFileSync('ca_bundle.crt', 'utf8');
 const credentials = { key: privateKey, cert: certificate, ca: ca };
 
 // Create an HTTPS server
-// const server = https.createServer(credentials, app);
+const server = https.createServer(credentials, app);
 
 
 // Create an HTTPS server
-const server = http.createServer(app);
+// const server = http.createServer(app);
 
 startBookingSMSCron()
 

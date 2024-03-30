@@ -1,20 +1,28 @@
 // Import necessary libraries and modules
 import express from 'express';
-import * as taxiTypeController from '../controllers/taxiType.controller';
-import { generateCRUDRoutes } from '../utils/simplecrud.controller';
+import { ProcessFieldCallback, generateCRUDRoutes } from '../utils/simplecrud.controller';
 import TaxiType from '../models/taxiType.model';
 
 // Create a router instance
 const router = express.Router();
 
-// Routes
-// router.post('/', taxiTypeController.createTaxiType);
-// router.get('/', taxiTypeController.getAllTaxiTypes);
-// router.get('/:id', taxiTypeController.getTaxiTypeById);
-// router.put('/:id', taxiTypeController.updateTaxiTypeById);
-// router.delete('/:id', taxiTypeController.deleteTaxiTypeById);
+const processFieldCallback: ProcessFieldCallback = (documentData: any) => {
+    if (documentData.car_features && typeof documentData.car_features === 'string') {
+        documentData.car_features = JSON.parse(documentData.car_features);
+    }
+    return documentData
+};
 
-router.use('/', generateCRUDRoutes(TaxiType))
+const uploadOptions = {
+    fields: {
+        image: {
+            storagePath: './uploads/taxiTypes',
+            maxCount: 5
+        }
+    }
+};
+
+router.use('/', generateCRUDRoutes(TaxiType, [], uploadOptions, processFieldCallback))
 
 // Export the router
 export default router;

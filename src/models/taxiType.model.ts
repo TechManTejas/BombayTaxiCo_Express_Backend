@@ -8,6 +8,7 @@ interface ICarFeature {
 
 // Define the TaxiType schema
 export interface ITaxiType extends Document {
+  image: string;
   name: string;
   description: string; 
   price_km: number;
@@ -25,6 +26,10 @@ const carFeatureSchema = new Schema<ICarFeature>({
 });
 
 const taxiTypeSchema = new Schema<ITaxiType>({
+  image: {
+    type: String, 
+    required: false, 
+  },
   name: {
     type: String,
     required: true,

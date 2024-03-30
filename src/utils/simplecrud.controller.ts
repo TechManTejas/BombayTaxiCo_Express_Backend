@@ -1,17 +1,65 @@
-import express, { Router, Request, Response } from 'express';
+import express, { Router, Request, Response, NextFunction } from 'express';
 import { Document, Model, PopulateOptions, Query } from 'mongoose';
+import fs from 'fs';
+import multer, { Field } from 'multer';
+
+interface UploadFieldOptions {
+  storagePath: string;
+  maxCount?: number;
+}
+
+interface UploadOptions {
+  fields: Record<string, UploadFieldOptions>;
+}
+
+export type ProcessFieldCallback = (documentData: Record<string, any>) => void;
 
 // Generic function to generate CRUD routes for a model
 export const generateCRUDRoutes = <T extends Document>(
-  model: Model<T>, 
-  population?: PopulateOptions[]
+  model: Model<T>,
+  population?: PopulateOptions[],
+  uploadOptions?: UploadOptions,
+  processFieldCallback?: ProcessFieldCallback
 ): Router => {
   const router = express.Router();
 
+  const multerFields: Field[] = uploadOptions ? Object.entries(uploadOptions.fields).map(([fieldName, options]) => {
+    return { name: fieldName, maxCount: options.maxCount ?? 1 }; // Default maxCount to 1 if not specified
+  }) : [];
+
+  const upload = uploadOptions ? multer({
+    storage: multer.diskStorage({
+      destination: (req, file, cb) => {
+        const fieldOptions = uploadOptions.fields[file.fieldname];
+        if (fieldOptions) {
+          const path = fieldOptions.storagePath;
+          fs.mkdirSync(path, { recursive: true });
+          cb(null, path);
+        }
+      },
+      filename: (req, file, cb) => {
+        cb(null, `${Date.now()}-${file.originalname}`);
+      }
+    })
+  }).fields(multerFields) : (req: Request, res: Response, next: NextFunction) => next();
+
   // Create
-  router.post('/', async (req: Request, res: Response) => {
+  router.post('/', upload, async (req: Request, res: Response) => {
     try {
-      const newItem = new model(req.body);
+      var documentData = { ...req.body };
+      if (req.files) {
+        Object.entries(req.files as { [fieldname: string]: Express.Multer.File[] }).forEach(([field, files]) => {
+          if (files && files.length > 0) {
+            documentData[field] = files.map(file => file.path)[0];
+          }
+        });
+      }
+
+      if (processFieldCallback) {
+        documentData = processFieldCallback(documentData);
+      }
+
+      const newItem = new model(documentData);
       await newItem.save();
       res.status(201).json(newItem);
     } catch (error) {
@@ -98,17 +146,27 @@ export const generateCRUDRoutes = <T extends Document>(
   });
 
   // Update by ID
-  router.put('/:id', async (req: Request, res: Response) => {
+  router.put('/:id', upload, async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
-      const updatedItem = await model.findByIdAndUpdate(id, req.body, { new: true });
+      var documentData = { ...req.body };
+      if (req.files) {
+        Object.entries(req.files as { [fieldname: string]: Express.Multer.File[] }).forEach(([field, files]) => {
+          if (files.length > 0) {
+            documentData[field] = files.map(file => file.path)[0];
+          }
+        });
+      }
 
+      if (processFieldCallback) {
+        documentData = processFieldCallback(documentData);
+      }
+
+      const updatedItem = await model.findByIdAndUpdate(req.params.id, documentData, { new: true });
       if (!updatedItem) {
         res.status(404).json({ message: `${model.modelName} not found` });
         return;
       }
-
-      res.status(200).json({ message: `${model.modelName} updated successfully`, [model.modelName.toLowerCase()]: updatedItem });
+      res.status(200).json(updatedItem);
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: 'Internal Server Error' });

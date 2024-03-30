@@ -41,6 +41,7 @@ const PORT = process.env.PORT || 5000;
 mongoose.connection.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
 app.use(express.json());
+app.use('/uploads', express.static('uploads'));
 app.use('/', searchRoutes);
 app.use('/users', userRoutes);
 app.use('/admins', adminRoutes);
@@ -92,11 +93,11 @@ const ca = fs.readFileSync('ca_bundle.crt', 'utf8');
 const credentials = { key: privateKey, cert: certificate, ca: ca };
 
 // Create an HTTPS server
-const server = https.createServer(credentials, app);
+// const server = https.createServer(credentials, app);
 
 
 // Create an HTTPS server
-// const server = http.createServer(app);
+const server = http.createServer(app);
 
 startBookingSMSCron()
 

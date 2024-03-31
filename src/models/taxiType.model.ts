@@ -4,13 +4,14 @@ import { Schema, model, Document } from 'mongoose';
 // Define the CarFeature interface
 interface ICarFeature {
   feature: string;
+  icon: string;
 }
 
 // Define the TaxiType schema
 export interface ITaxiType extends Document {
   image: string;
   name: string;
-  description: string; 
+  description: string;
   price_km: number;
   price_hour: number;
   extra_km_charges: number;
@@ -19,22 +20,20 @@ export interface ITaxiType extends Document {
 }
 
 const carFeatureSchema = new Schema<ICarFeature>({
-  feature: {
-    type: String,
-    required: true,
-  },
+  feature: { type: String },
+  icon: { type: String, required: true },
 });
 
 const taxiTypeSchema = new Schema<ITaxiType>({
   image: {
-    type: String, 
-    required: false, 
+    type: String,
+    required: false,
   },
   name: {
     type: String,
     required: true,
   },
-  description: { 
+  description: {
     type: String,
     required: true,
   },

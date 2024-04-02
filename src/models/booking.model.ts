@@ -41,6 +41,12 @@ export interface IBooking extends Document {
   invoice?: Schema.Types.Mixed;
   booking_status?: BookingStatus;
   trip_type: TripType;
+  name: string;
+  gender: string;
+  emailId: string;
+  contactNumber: string;
+  pincode: string;
+  address: string;
   notified: boolean;
   numberOfPassengers: string,
   numberOfSmallBags: string,
@@ -80,6 +86,12 @@ const bookingSchema = new Schema<IBooking>({
   invoice: { type: Schema.Types.Mixed },
   booking_status: { type: String, enum: Object.values(BookingStatus), default: BookingStatus.New },
   trip_type: { type: String, enum: Object.values(TripType), required: true },
+  name: { type: String },
+  gender: { type: String },
+  emailId: { type: String },
+  contactNumber: { type: String },
+  pincode: { type: String },
+  address: { type: String },
   notified: { type: Boolean, default: false },
   numberOfPassengers: { type: String },
   numberOfSmallBags: { type: String },

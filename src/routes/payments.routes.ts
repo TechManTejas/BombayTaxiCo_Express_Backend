@@ -20,7 +20,7 @@ router.post("/orders", async (req, res) => {
 
     try {
 
-        let route
+        let route;
 
         // Fetch taxi type details
         const taxiType = await TaxiType.findById(requested_taxi_type);
@@ -135,6 +135,12 @@ router.post("/success", async (req, res) => {
             pickup_address: booking.pickup_address,
             drop_address: booking.drop_address,
             trip_type: booking.trip_type,
+            name: booking.name,
+            gender: booking.gender,
+            emailId: booking.emailId,
+            contactNumber: booking.contactNumber,
+            pincode: booking.pincode,
+            address: booking.address,
             requested_taxi_type: booking.requested_taxi_type,
             payments: [
                 {
@@ -161,7 +167,6 @@ router.post("/success", async (req, res) => {
             bookingForSomeoneElse: booking.bookingForSomeoneElse,
             otherDetails: booking.otherDetails
         });
-        console.log(newBooking)
 
         // Save the booking to the database
         const savedBooking = await newBooking.save();

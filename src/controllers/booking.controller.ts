@@ -69,7 +69,7 @@ export const getUserBookings = async (req: Request, res: Response) => {
 
     const totalCount = await Booking.countDocuments(query);
 
-    const items = await itemsQuery.skip(skip).limit(pageSize);
+    const items = await itemsQuery.skip(skip).limit(pageSize).sort({ createdAt: -1 });;
 
     res.status(200).json({ bookings: items, total: totalCount });
   } catch (error) {

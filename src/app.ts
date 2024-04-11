@@ -93,11 +93,11 @@ const ca = fs.readFileSync('ca_bundle.crt', 'utf8');
 const credentials = { key: privateKey, cert: certificate, ca: ca };
 
 // Create an HTTPS server
-const server = https.createServer(credentials, app);
+// const server = https.createServer(credentials, app);
 
 
-// Create an HTTPS server
-// const server = http.createServer(app);
+// Create an HTTP server
+const server = http.createServer(app);
 
 startBookingSMSCron()
 

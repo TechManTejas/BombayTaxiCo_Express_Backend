@@ -25,6 +25,7 @@ export interface IBooking extends Document {
   taxi_id?: Schema.Types.ObjectId;
   driver_id?: Schema.Types.ObjectId;
   requested_taxi_type: Schema.Types.ObjectId;
+  pickup_city: string;
   pick_up_date: Date;
   pick_up_time: string;
   return_date?: Date;
@@ -105,6 +106,8 @@ const bookingSchema = new Schema<IBooking>({
   carrierOverTop: { type: Boolean, default: false },
   bookingForSomeoneElse: { type: Boolean, default: false },
   otherDetails: { type: String },
+}, {
+  timestamps: true
 });
 
 // Create and export the Booking model

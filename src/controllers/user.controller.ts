@@ -1,10 +1,13 @@
 // Import necessary libraries and modules
-import { Request, Response } from 'express';
-import jwt from 'jsonwebtoken';
-import User from '../models/user.model';
+import { Request, Response } from "express";
+import jwt from "jsonwebtoken";
+import User from "../models/user.model";
 
 // Controller function for user registration
-export const registerUser = async (req: Request, res: Response): Promise<void> => {
+export const registerUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     // Extract user details from the request body
     const { mobile_no, email_id, name } = req.body;
@@ -22,16 +25,19 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
     await newUser.save();
 
     // Send a success response
-    res.status(201).json({ message: 'User registered successfully' });
+    res.status(201).json({ message: "User registered successfully" });
   } catch (error) {
     // Handle errors and send an error response
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
 // Controller function for user signin
-export const signinUser = async (req: Request, res: Response): Promise<void> => {
+export const signinUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     // Extract mobile number from the request body
     const { mobile_no } = req.body;
@@ -41,7 +47,7 @@ export const signinUser = async (req: Request, res: Response): Promise<void> => 
 
     // Check if the user exists
     if (!user) {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
@@ -49,22 +55,36 @@ export const signinUser = async (req: Request, res: Response): Promise<void> => 
 
     // Generate a JWT token
     const token = jwt.sign(
-      { userId: user._id }, 
-      process.env.JWT_SECRET_KEY || 'your-secret-key',
+      { userId: user._id },
+      process.env.JWT_SECRET_KEY || "your-secret-key"
       // { expiresIn: null }
-      );
+    );
+
+    // Prepare user information to send, omitting sensitive fields like password
+    const userInfo = {
+      _id: user._id,
+      name: user.name,
+      email: user.email_id,
+      mobile_no: user.mobile_no,
+    };
 
     // Send the token in the response
-    res.status(200).json({ token });
+    res.status(200).json({ 
+      token, 
+      user: userInfo 
+    });
   } catch (error) {
     // Handle errors and send an error response
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
 // Controller function to get user details
-export const getUserDetails = async (req: Request, res: Response): Promise<void> => {
+export const getUserDetails = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     // Get the user ID from the request (added by the authentication middleware)
     const userId = (req as any).userId;
@@ -74,19 +94,19 @@ export const getUserDetails = async (req: Request, res: Response): Promise<void>
 
     // Check if the user exists
     if (!user) {
-      res.status(404).json({ message: 'User not found' });
+      res.status(404).json({ message: "User not found" });
       return;
     }
 
     // Print the user's name (you can replace this with any desired action)
-    console.log('User Name:', user.name);
+    console.log("User Name:", user.name);
 
     // Send a success response
-    res.status(200).json({ message: 'User details retrieved successfully' });
+    res.status(200).json({ message: "User details retrieved successfully" });
   } catch (error) {
     // Handle errors and send an error response
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 

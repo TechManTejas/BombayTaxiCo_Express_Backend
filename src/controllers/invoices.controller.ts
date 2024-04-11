@@ -75,7 +75,7 @@ export const getUserInvoices = async (req: Request, res: Response) => {
         const query = { user_id: userId, ...filter, ...searchFilter };
         const itemsQuery = Invoice.find(query).lean().populate(populationQuery) as Query<any[], any, {}>;
         const totalCount = await Invoice.countDocuments(query);
-        const items = await itemsQuery.skip(skip).limit(pageSize);
+        const items = await itemsQuery.skip(skip).limit(pageSize).sort({ createdAt: -1 });;
 
         res.status(200).json({ invoices: items, total: totalCount });
     } catch (error) {

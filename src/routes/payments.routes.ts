@@ -133,6 +133,7 @@ router.post("/success", async (req, res) => {
             pick_up_time: booking.pick_up_time,
             return_date: booking.return_date,
             pickup_address: booking.pickup_address,
+            pickup_city: booking.pickup_city,
             drop_address: booking.drop_address,
             trip_type: booking.trip_type,
             name: booking.name,

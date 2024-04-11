@@ -118,7 +118,10 @@ export const generateCRUDRoutes = <T extends Document>(
 
       const items = await itemsQuery
         .skip(skip)
-        .limit(pageSize);
+        .limit(pageSize)
+        .sort({ createdAt: -1 });
+
+      console.log(items)
 
       res.status(200).json({ [`${model.modelName.toLowerCase()}s`]: items, total: totalCount });
     } catch (error) {

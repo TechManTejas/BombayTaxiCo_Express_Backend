@@ -1,28 +1,36 @@
-import { Request, Response } from 'express';
-import SingletonSettings from '../models/settings.model';
+import { Request, Response } from "express";
+import SingletonSettings from "../models/settings.model";
 
 // Controller to get the singleton settings
-export const getSettings = async (req: Request, res: Response): Promise<void> => {
+export const getSettings = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    const settings = await SingletonSettings.findOne({ _id: 'singleton' });
+    const settings = await SingletonSettings.findOne({ _id: "singleton" });
     res.status(200).json(settings);
   } catch (error) {
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 
 // Controller to update the singleton settings
-export const updateSettings = async (req: Request, res: Response): Promise<void> => {
+export const updateSettings = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
-    const updatedSettings = req.body; // Assuming the request body contains the updated settings
+    const updatedSettings = req.body;
+
     const settings = await SingletonSettings.findOneAndUpdate(
-      { _id: 'singleton' },
+      { _id: "singleton" },
       { $set: { settings: updatedSettings } },
-      { new: true }
+      { new: true, runValidators: true }
     );
+
     res.status(200).json(settings);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };

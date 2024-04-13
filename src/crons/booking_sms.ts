@@ -71,7 +71,20 @@ const startBookingSMSCron = () => {
                 // console.log('Taxi:', taxi?.taxi_no);
                 // console.log('Driver:', driver?.name, driver?.mobile_no);
 
-                let message = `Your Taxi Booking Details:\n\nTaxi:\n\t${taxi?.taxi_no}\nDriver:\n\t${driver?.name}\n\t${driver?.mobile_no}\n\nHappy Journey`
+                let message = `Bombay Taxi Co.™️\n\n` +
+                    `ᴅᴇᴀʀ ᴄᴜꜱᴛᴏᴍᴇʀ,\n\n` +
+                    `Thank You For Choosing InterCityCab !\n\n` +
+                    `ᴄᴀʙ & ᴅʀɪᴠᴇʀ ᴅᴇᴛᴀɪʟꜱ,\n\n` +
+                    `Cab Type: ${taxi?.taxi_type_id.type || 'N/A'}\n` +
+                    `Cab No.: ${taxi?.taxi_no || 'N/A'}\n` +
+                    `Drive Name: ${driver?.name || 'N/A'}\n` +
+                    `Contact No.: ${driver?.mobile_no || 'N/A'}\n\n` +
+                    `Wish You A Safe & Happy Journey !\n\n` +
+                    `FOR ANY QUERY OR ASSISTANCE CALL\n\n` +
+                    `Bombay Taxi Co. Customer Support\n` +
+                    `📱 +91 62627 44744 (24x7)\n` +
+                    `📧 contact@bombaytaxicompany.com\n` +
+                    `🌐 www.bombaytaxicompany.com`;
 
                 console.log(message)
 

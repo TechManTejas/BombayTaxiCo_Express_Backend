@@ -56,6 +56,7 @@ export const getUserBookings = async (req: Request, res: Response) => {
       { path: 'route_id', populate: { path: 'from_id to_id' } },
       { path: 'user_id' },
       { path: 'driver_id' },
+      { path: 'pickup_city' },
       { path: 'taxi_id', populate: { path: 'taxi_type_id' } },
       { path: 'coupon_id' },
       { path: 'requested_taxi_type' },

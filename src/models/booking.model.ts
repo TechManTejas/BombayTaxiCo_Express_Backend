@@ -8,6 +8,7 @@ export enum BookingStatus {
   OnRide = 'On Ride',
   Completed = 'Completed',
   Cancelled = 'Cancelled',
+  CancelledByUser = 'CancelledByUser',
 }
 
 // Enum for trip type
@@ -19,13 +20,13 @@ export enum TripType {
 
 // Define the Booking schema
 export interface IBooking extends Document {
+  pickup_city?: Schema.Types.ObjectId,
   route_id?: Schema.Types.ObjectId;
   user_id: Schema.Types.ObjectId;
   coupon_id?: Schema.Types.ObjectId;
   taxi_id?: Schema.Types.ObjectId;
   driver_id?: Schema.Types.ObjectId;
   requested_taxi_type: Schema.Types.ObjectId;
-  pickup_city: string;
   pick_up_date: Date;
   pick_up_time: string;
   return_date?: Date;
@@ -65,6 +66,7 @@ export interface IBooking extends Document {
 
 // Define the Booking schema
 const bookingSchema = new Schema<IBooking>({
+  pickup_city: { type: Schema.Types.ObjectId, ref: 'City' },
   route_id: { type: Schema.Types.ObjectId, ref: 'Route' },
   user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   coupon_id: { type: Schema.Types.ObjectId, ref: 'Coupon' },

@@ -13,6 +13,7 @@ export interface ISettings extends Document {
     nightChargePerDay: string;
     extraPickupDropCharges: string;
     advancePaymentPercentage: string;
+    minimumBillableKm: number;
 }
 
 const settingsSchema = new Schema<ISettings>({
@@ -56,6 +57,10 @@ const settingsSchema = new Schema<ISettings>({
         type: String,
         required: true,
     },
+    minimumBillableKm: {
+        type: Number,
+        required: true,
+    }
 });
 
 // Define the schema for the singleton document

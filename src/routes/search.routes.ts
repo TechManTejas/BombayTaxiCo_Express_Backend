@@ -33,7 +33,7 @@ router.post('/search', async (req: Request, res: Response) => {
 
       // Fetch settings
       const settingsResponse = await axios.get('https://43.204.227.16:5000/settings/get');
-      const settings = settingsResponse.data;
+      const settings = settingsResponse.data.settings;
       const minimumBillableKm = parseInt(settings.minimumBillableKm)
       if (!settings) return res.status(500).json({ msg: "Settings not found" });
 

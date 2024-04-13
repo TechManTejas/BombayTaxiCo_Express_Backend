@@ -28,7 +28,7 @@ router.post("/orders", async (req, res) => {
 
         // Fetch settings
         const settingsResponse = await axios.get('https://43.204.227.16:5000/settings/get');
-        const settings = settingsResponse.data;
+        const settings = settingsResponse.data.settings;
         if (!settings) return res.status(500).json({ msg: "Settings not found" });
 
 

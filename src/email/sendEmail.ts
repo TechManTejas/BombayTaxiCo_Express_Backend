@@ -13,7 +13,7 @@ export const sendEmail = async (emailOptions: any) => {
 
   let info = await transporter.sendMail({
     from: '"Bombay Taxi Company" <contact@bombaytaxicompany.com>', // sender address
-    to: "contact@bombaytaxicompany.com", // list of receivers
+    to: "bombaytaxicompany@gmail.com", // list of receivers
     subject: emailOptions.subject, // Subject line
     text: emailOptions.message, // plain text body
     html: `<p>${emailOptions.message}</p>`, // HTML body content

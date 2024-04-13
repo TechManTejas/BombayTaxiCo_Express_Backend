@@ -83,7 +83,7 @@ const startBookingSMSCron = () => {
                     `FOR ANY QUERY OR ASSISTANCE CALL\n\n` +
                     `Bombay Taxi Co. Customer Support\n` +
                     `📱 +91 62627 44744 (24x7)\n` +
-                    `📧 contact@bombaytaxicompany.com\n` +
+                    `📧 bombaytaxicompany@gmail.com\n` +
                     `🌐 www.bombaytaxicompany.com`;
 
                 console.log(message)

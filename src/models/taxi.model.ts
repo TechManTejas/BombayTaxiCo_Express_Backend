@@ -4,7 +4,7 @@ import { ITaxiType } from './taxiType.model';
 
 // Define the Taxi schema
 export interface ITaxi extends Document {
-  taxi_type_id: ITaxiType['_id'];
+  taxi_type_id: ITaxiType;
   taxi_no: string;
   driving_license: string;
   taxi_status: 'Available' | 'Unavailable' | 'Assigned' | 'On a Trip';

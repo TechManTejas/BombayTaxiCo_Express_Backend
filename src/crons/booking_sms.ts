@@ -75,7 +75,7 @@ const startBookingSMSCron = () => {
                     `ᴅᴇᴀʀ ᴄᴜꜱᴛᴏᴍᴇʀ,\n\n` +
                     `Thank You For Choosing InterCityCab !\n\n` +
                     `ᴄᴀʙ & ᴅʀɪᴠᴇʀ ᴅᴇᴛᴀɪʟꜱ,\n\n` +
-                    `Cab Type: ${taxi?.taxi_type_id.type || 'N/A'}\n` +
+                    `Cab Type: ${taxi?.taxi_type_id.name || 'N/A'}\n` +
                     `Cab No.: ${taxi?.taxi_no || 'N/A'}\n` +
                     `Drive Name: ${driver?.name || 'N/A'}\n` +
                     `Contact No.: ${driver?.mobile_no || 'N/A'}\n\n` +

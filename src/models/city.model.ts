@@ -2,7 +2,7 @@
 import { Schema, model, Document } from 'mongoose';
 
 // Define the From schema
-interface ICity extends Document {
+export interface ICity extends Document {
   name: string;
   status: 'Active' | 'Inactive';
 }

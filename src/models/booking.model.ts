@@ -1,5 +1,8 @@
 // Import necessary libraries and modules
 import { Schema, model, Document } from 'mongoose';
+import { IUser } from './user.model';
+import { ITaxi } from './taxi.model';
+import { IRoute } from './route.model';
 
 // Enum for booking status
 export enum BookingStatus {
@@ -21,10 +24,10 @@ export enum TripType {
 // Define the Booking schema
 export interface IBooking extends Document {
   pickup_city?: Schema.Types.ObjectId,
-  route_id?: Schema.Types.ObjectId;
-  user_id: Schema.Types.ObjectId;
+  route_id?: IRoute;
+  user_id: IUser;
   coupon_id?: Schema.Types.ObjectId;
-  taxi_id?: Schema.Types.ObjectId;
+  taxi_id?: ITaxi;
   driver_id?: Schema.Types.ObjectId;
   requested_taxi_type: Schema.Types.ObjectId;
   pick_up_date: Date;

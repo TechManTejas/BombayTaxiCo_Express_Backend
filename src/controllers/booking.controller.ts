@@ -1,10 +1,12 @@
 // BookingController.ts
-import { Request, Response } from 'express';
-import Booking, { BookingStatus } from '../models/booking.model';
-import Driver from '../models/driver.model';
-import Taxi from '../models/taxi.model';
-import jwt from 'jsonwebtoken';
-import mongoose, { Query } from 'mongoose';
+import { Request, Response } from "express";
+import Booking, { BookingStatus, TripType } from "../models/booking.model";
+import Driver from "../models/driver.model";
+import Taxi from "../models/taxi.model";
+import jwt from "jsonwebtoken";
+import mongoose, { Query } from "mongoose";
+import { sendEmail } from "../email/sendEmail";
+import confirmationEmail from "../email/confirmation";
 
 // Function to get bookings associated with the user with pagination, search, and filter
 export const getUserBookings = async (req: Request, res: Response) => {
@@ -13,18 +15,25 @@ export const getUserBookings = async (req: Request, res: Response) => {
     const token = req.headers.authorization;
 
     if (!token) {
-      return res.status(401).json({ message: 'Unauthorized: No token provided' });
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No token provided" });
     }
 
     // Decode the token to get user information
-    const decodedToken: any = jwt.verify(token, `${process.env.JWT_SECRET_KEY}`); // Replace 'your_secret_key' with your actual secret key
+    const decodedToken: any = jwt.verify(
+      token,
+      `${process.env.JWT_SECRET_KEY}`
+    ); // Replace 'your_secret_key' with your actual secret key
 
     // Get user ID from decoded token
     const userId = decodedToken.userId;
 
     // Pagination
     const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
-    const pageSize = req.query.pageSize ? parseInt(req.query.pageSize as string, 10) : 10;
+    const pageSize = req.query.pageSize
+      ? parseInt(req.query.pageSize as string, 10)
+      : 10;
     const skip = (page - 1) * pageSize;
 
     // Filter (customize this based on your model's properties)
@@ -41,10 +50,12 @@ export const getUserBookings = async (req: Request, res: Response) => {
       const orArray = modelProperties
         .filter((property) => {
           const propertyType = Booking.schema.paths[property]?.instance;
-          return propertyType === 'String';
+          return propertyType === "String";
         })
         .map((property) => {
-          const regexFilter = { [property]: { $regex: new RegExp(searchQuery, 'i') } };
+          const regexFilter = {
+            [property]: { $regex: new RegExp(searchQuery, "i") },
+          };
           return regexFilter;
         });
 
@@ -53,43 +64,59 @@ export const getUserBookings = async (req: Request, res: Response) => {
     }
 
     const populateOptions = [
-      { path: 'route_id', populate: { path: 'from_id to_id' } },
-      { path: 'user_id' },
-      { path: 'driver_id' },
-      { path: 'pickup_city' },
-      { path: 'taxi_id', populate: { path: 'taxi_type_id' } },
-      { path: 'coupon_id' },
-      { path: 'requested_taxi_type' },
+      { path: "route_id", populate: { path: "from_id to_id" } },
+      { path: "user_id" },
+      { path: "driver_id" },
+      { path: "pickup_city" },
+      { path: "taxi_id", populate: { path: "taxi_type_id" } },
+      { path: "coupon_id" },
+      { path: "requested_taxi_type" },
     ];
 
-    const populationQuery = populateOptions.map((option) => ({ path: option.path, populate: option.populate }));
+    const populationQuery = populateOptions.map((option) => ({
+      path: option.path,
+      populate: option.populate,
+    }));
 
     const query = { user_id: userId, ...filter, ...searchFilter };
 
-    const itemsQuery = Booking.find(query).lean().populate(populationQuery) as Query<any[], any, {}>;
+    const itemsQuery = Booking.find(query)
+      .lean()
+      .populate(populationQuery) as Query<any[], any, {}>;
 
     const totalCount = await Booking.countDocuments(query);
 
-    const items = await itemsQuery.skip(skip).limit(pageSize).sort({ createdAt: -1 });;
+    const items = await itemsQuery
+      .skip(skip)
+      .limit(pageSize)
+      .sort({ createdAt: -1 });
 
     res.status(200).json({ bookings: items, total: totalCount });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-export const getUserBookingStatusCounts = async (req: Request, res: Response) => {
+export const getUserBookingStatusCounts = async (
+  req: Request,
+  res: Response
+) => {
   try {
     // Extract the token from the request headers
     const token = req.headers.authorization;
 
     if (!token) {
-      return res.status(401).json({ message: 'Unauthorized: No token provided' });
+      return res
+        .status(401)
+        .json({ message: "Unauthorized: No token provided" });
     }
 
     // Decode the token to get user information
-    const decodedToken: any = jwt.verify(token, `${process.env.JWT_SECRET_KEY}`);
+    const decodedToken: any = jwt.verify(
+      token,
+      `${process.env.JWT_SECRET_KEY}`
+    );
 
     // Get user ID from decoded token
     const userId = decodedToken.userId;
@@ -101,7 +128,7 @@ export const getUserBookingStatusCounts = async (req: Request, res: Response) =>
       },
       {
         $group: {
-          _id: '$booking_status',
+          _id: "$booking_status",
           count: { $sum: 1 },
         },
       },
@@ -120,12 +147,12 @@ export const getUserBookingStatusCounts = async (req: Request, res: Response) =>
     });
 
     // Include an "All" attribute with the total count
-    statusCounts['All'] = totalCount;
+    statusCounts["All"] = totalCount;
 
     res.status(200).json(statusCounts);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -135,7 +162,7 @@ export const getBookingStatusCounts = async (req: Request, res: Response) => {
     const result = await Booking.aggregate([
       {
         $group: {
-          _id: '$booking_status',
+          _id: "$booking_status",
           count: { $sum: 1 },
         },
       },
@@ -152,12 +179,12 @@ export const getBookingStatusCounts = async (req: Request, res: Response) => {
     });
 
     // Include an "All" attribute with the total count
-    statusCounts['All'] = totalCount;
+    statusCounts["All"] = totalCount;
 
     res.status(200).json(statusCounts);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: 'Internal Server Error' });
+    res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
@@ -173,22 +200,77 @@ export const assignTaxiDriver = async (req: Request, res: Response) => {
       // Assign driver_id and taxi_id to the booking object
       const updatedBooking = await Booking.findByIdAndUpdate(
         booking_id,
-        { $set: { driver_id, taxi_id, booking_status: 'Confirmed' } },
+        { $set: { driver_id, taxi_id, booking_status: "Confirmed" } },
         { new: true, session }
-      );
+      )
+        .populate({
+          path: "taxi_id",
+          populate: { path: "taxi_type_id", select: "name" },
+        })
+        .populate({
+          path: "route",
+          populate: { path: "taxi_type_id", select: "name" },
+        })
+        .populate("user_id");
 
       if (updatedBooking) {
         // Add the booking object to the assigned_trips of the driver
-        await Driver.findByIdAndUpdate(driver_id, { $push: { assigned_trips: updatedBooking._id } }, { session });
+        await Driver.findByIdAndUpdate(
+          driver_id,
+          { $push: { assigned_trips: updatedBooking._id } },
+          { session }
+        );
 
         // Add the booking object to the assigned_trips of the taxi
-        await Taxi.findByIdAndUpdate(taxi_id, { $push: { assigned_trips: updatedBooking._id } }, { session });
+        await Taxi.findByIdAndUpdate(
+          taxi_id,
+          { $push: { assigned_trips: updatedBooking._id } },
+          { session }
+        );
 
         // Change the status of the driver to 'Assigned'
-        await Driver.findByIdAndUpdate(driver_id, { $set: { driver_status: 'Assigned' } }, { session });
+        await Driver.findByIdAndUpdate(
+          driver_id,
+          { $set: { driver_status: "Assigned" } },
+          { session }
+        );
 
         // Change the status of the taxi to 'Assigned'
-        await Taxi.findByIdAndUpdate(taxi_id, { $set: { taxi_status: 'Assigned' } }, { session });
+        await Taxi.findByIdAndUpdate(
+          taxi_id,
+          { $set: { taxi_status: "Assigned" } },
+          { session }
+        );
+
+        let route = ''
+        if(updatedBooking.trip_type === TripType.OneWay){
+          route = updatedBooking.route_id?.from_id.name + ' → ' +  updatedBooking.route_id?.to_id.name 
+        } else if (updatedBooking.trip_type === TripType.Round){
+          route = updatedBooking.route_id?.from_id.name + ' → ' +  updatedBooking.route_id?.to_id.name  + ' → ' + updatedBooking.route_id?.from_id.name 
+        }else{
+          route = updatedBooking.route_id?.from_id.name + ' → ' 
+        }
+
+        // Send the confirmation email
+        const bookingDetails = {
+          trip_type: updatedBooking.trip_type,
+          journey: route,
+          taxi: updatedBooking?.taxi_id?.taxi_type_id.name,
+          pickup_address: updatedBooking.pickup_address,
+          drop_address: updatedBooking.drop_address,
+          pick_up_date: updatedBooking.pick_up_date,
+          pick_up_time: updatedBooking.pick_up_time,
+          return_date: updatedBooking.return_date,
+        };
+
+        console.log("Updated Booking", updatedBooking);
+
+        const emailHtmlContent = confirmationEmail(bookingDetails);
+        await sendEmail({
+          to: updatedBooking.user_id.email_id,
+          subject: "Your Taxi Booking is Confirmed",
+          message: emailHtmlContent,
+        });
       }
 
       // Commit the transaction
@@ -196,18 +278,20 @@ export const assignTaxiDriver = async (req: Request, res: Response) => {
       session.endSession();
 
       // Send success response
-      res.status(200).json({ message: 'Assignment successful, Booking Confirm' });
+      res
+        .status(200)
+        .json({ message: "Assignment successful, Booking Confirm" });
     } catch (error) {
       // Rollback the transaction on error
       await session.abortTransaction();
       session.endSession();
 
-      console.error('Error:', error);
-      res.status(500).json({ message: 'Error assigning taxi and driver' });
+      console.error("Error:", error);
+      res.status(500).json({ message: "Error assigning taxi and driver" });
     }
   } catch (error) {
-    console.error('Error starting transaction:', error);
-    res.status(500).json({ message: 'Error starting transaction' });
+    console.error("Error starting transaction:", error);
+    res.status(500).json({ message: "Error starting transaction" });
   }
 };
 
@@ -225,14 +309,16 @@ export const startTrip = async (req: Request, res: Response) => {
 
       if (booking) {
         // Update booking status to "On Ride"
-        await booking.updateOne({ $set: { booking_status: 'On Ride' } }).session(session);
+        await booking
+          .updateOne({ $set: { booking_status: "On Ride" } })
+          .session(session);
 
         // Update taxi status to "On a Trip" and remove the booking from assigned_trips
         await Taxi.findByIdAndUpdate(
           booking.taxi_id,
           {
-            $set: { taxi_status: 'On a Trip', current_trip: booking._id },
-            $pull: { assigned_trips: booking._id }
+            $set: { taxi_status: "On a Trip", current_trip: booking._id },
+            $pull: { assigned_trips: booking._id },
           },
           { session }
         );
@@ -241,8 +327,8 @@ export const startTrip = async (req: Request, res: Response) => {
         await Driver.findByIdAndUpdate(
           booking.driver_id,
           {
-            $set: { driver_status: 'On a Trip', current_trip: booking._id },
-            $pull: { assigned_trips: booking._id }
+            $set: { driver_status: "On a Trip", current_trip: booking._id },
+            $pull: { assigned_trips: booking._id },
           },
           { session }
         );
@@ -252,22 +338,22 @@ export const startTrip = async (req: Request, res: Response) => {
         session.endSession();
 
         // Send success response
-        res.status(200).json({ message: 'Trip started successfully' });
+        res.status(200).json({ message: "Trip started successfully" });
       } else {
         // If the booking is not found
-        res.status(404).json({ message: 'Booking not found' });
+        res.status(404).json({ message: "Booking not found" });
       }
     } catch (error) {
       // Rollback the transaction on error
       await session.abortTransaction();
       session.endSession();
 
-      console.error('Error:', error);
-      res.status(500).json({ message: 'Error starting trip' });
+      console.error("Error:", error);
+      res.status(500).json({ message: "Error starting trip" });
     }
   } catch (error) {
-    console.error('Error starting transaction:', error);
-    res.status(500).json({ message: 'Error starting transaction' });
+    console.error("Error starting transaction:", error);
+    res.status(500).json({ message: "Error starting transaction" });
   }
 };
 
@@ -284,7 +370,7 @@ export const endTrip = async (req: Request, res: Response) => {
       const updatedBooking = await Booking.findByIdAndUpdate(
         booking_id,
         {
-          $set: { booking_status: 'Completed' },
+          $set: { booking_status: "Completed" },
         },
         { new: true, session }
       );
@@ -317,26 +403,46 @@ export const endTrip = async (req: Request, res: Response) => {
         );
 
         // Check if assigned_trips are empty for Driver and Taxi
-        const driver = await Driver.findById(updatedBooking.driver_id).session(session);
-        const taxi = await Taxi.findById(updatedBooking.taxi_id).session(session);
+        const driver = await Driver.findById(updatedBooking.driver_id).session(
+          session
+        );
+        const taxi = await Taxi.findById(updatedBooking.taxi_id).session(
+          session
+        );
 
         if (driver) {
           if (driver.assigned_trips.length === 0) {
             // If assigned_trips are empty, make driver status Available
-            await Driver.findByIdAndUpdate(driver._id, { $set: { driver_status: 'Available' } }, { session });
+            await Driver.findByIdAndUpdate(
+              driver._id,
+              { $set: { driver_status: "Available" } },
+              { session }
+            );
           } else {
             // If assigned_trips are not empty, make driver status Assigned
-            await Driver.findByIdAndUpdate(driver._id, { $set: { driver_status: 'Assigned' } }, { session });
+            await Driver.findByIdAndUpdate(
+              driver._id,
+              { $set: { driver_status: "Assigned" } },
+              { session }
+            );
           }
         }
 
         if (taxi) {
           if (taxi.assigned_trips.length === 0) {
             // If assigned_trips are empty, make taxi status Available
-            await Taxi.findByIdAndUpdate(taxi._id, { $set: { taxi_status: 'Available' } }, { session });
+            await Taxi.findByIdAndUpdate(
+              taxi._id,
+              { $set: { taxi_status: "Available" } },
+              { session }
+            );
           } else {
             // If assigned_trips are not empty, make taxi status Assigned
-            await Taxi.findByIdAndUpdate(taxi._id, { $set: { taxi_status: 'Assigned' } }, { session });
+            await Taxi.findByIdAndUpdate(
+              taxi._id,
+              { $set: { taxi_status: "Assigned" } },
+              { session }
+            );
           }
         }
       }
@@ -346,17 +452,17 @@ export const endTrip = async (req: Request, res: Response) => {
       session.endSession();
 
       // Send success response
-      res.status(200).json({ message: 'Trip ended successfully' });
+      res.status(200).json({ message: "Trip ended successfully" });
     } catch (error) {
       // Rollback the transaction on error
       await session.abortTransaction();
       session.endSession();
 
-      console.error('Error:', error);
-      res.status(500).json({ message: 'Error ending trip' });
+      console.error("Error:", error);
+      res.status(500).json({ message: "Error ending trip" });
     }
   } catch (error) {
-    console.error('Error starting transaction:', error);
-    res.status(500).json({ message: 'Error starting transaction' });
+    console.error("Error starting transaction:", error);
+    res.status(500).json({ message: "Error starting transaction" });
   }
 };

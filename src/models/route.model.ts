@@ -2,12 +2,12 @@
 import { Schema, model, Document } from 'mongoose';
 
 // Import the To and From models
-import City from './city.model';
+import { ICity } from './city.model';
 
 // Define the Route schema
 export interface IRoute extends Document {
-  from_id: typeof City;
-  to_id: typeof City;
+  from_id: ICity;
+  to_id: ICity;
   one_way_trip_km: number;
   round_trip_km: number;
   route_status: 'Active' | 'Inactive';

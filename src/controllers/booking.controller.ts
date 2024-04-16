@@ -208,8 +208,11 @@ export const assignTaxiDriver = async (req: Request, res: Response) => {
           populate: { path: "taxi_type_id", select: "name" },
         })
         .populate({
-          path: "route",
-          populate: { path: "taxi_type_id", select: "name" },
+          path: "route_id",
+          populate: [
+            { path: "from_id", select: "name -_id" },
+            { path: "to_id", select: "name -_id" },
+          ],
         })
         .populate("user_id");
 
@@ -242,13 +245,21 @@ export const assignTaxiDriver = async (req: Request, res: Response) => {
           { session }
         );
 
-        let route = ''
-        if(updatedBooking.trip_type === TripType.OneWay){
-          route = updatedBooking.route_id?.from_id.name + ' → ' +  updatedBooking.route_id?.to_id.name 
-        } else if (updatedBooking.trip_type === TripType.Round){
-          route = updatedBooking.route_id?.from_id.name + ' → ' +  updatedBooking.route_id?.to_id.name  + ' → ' + updatedBooking.route_id?.from_id.name 
-        }else{
-          route = updatedBooking.route_id?.from_id.name + ' → ' 
+        let route = "";
+        if (updatedBooking.trip_type === TripType.OneWay) {
+          route =
+            updatedBooking.route_id?.from_id.name +
+            " → " +
+            updatedBooking.route_id?.to_id.name;
+        } else if (updatedBooking.trip_type === TripType.Round) {
+          route =
+            updatedBooking.route_id?.from_id.name +
+            " → " +
+            updatedBooking.route_id?.to_id.name +
+            " → " +
+            updatedBooking.route_id?.from_id.name;
+        } else {
+          route = updatedBooking.route_id?.from_id.name + " → ";
         }
 
         // Send the confirmation email
@@ -257,7 +268,7 @@ export const assignTaxiDriver = async (req: Request, res: Response) => {
           journey: route,
           taxi: updatedBooking?.taxi_id?.taxi_type_id.name,
           pickup_address: updatedBooking.pickup_address,
-          drop_address: updatedBooking.drop_address,
+          drop_address: updatedBooking.drop_address ?? '-',
           pick_up_date: updatedBooking.pick_up_date,
           pick_up_time: updatedBooking.pick_up_time,
           return_date: updatedBooking.return_date,

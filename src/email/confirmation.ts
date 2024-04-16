@@ -145,7 +145,7 @@ const confirmationEmail = (bookingDetails: any) => {
     <div
       style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
       <div style="width: 100%; padding-top: 20px; display: flex; justify-content: center;">
-          <img src="http://localhost:5000/uploads/assets/logo.webp" style="width: 60%; "/>
+          <img src="http://43.204.227.16:5000/uploads/assets/logo.webp" style="width: 60%; "/>
       </div>
       <div style="background-color: transparent">
         <div class="u-row"
@@ -164,7 +164,7 @@ const confirmationEmail = (bookingDetails: any) => {
                       <td
                         style="overflow-wrap:break-word;word-break:break-word;padding:40px 50px 30px;font-family:'Raleway',sans-serif;">
                         <div style="font-size: 14px; line-height: 140%; text-align: justify; word-wrap: break-word;">
-                          <img src="http://localhost:5000/uploads/assets/taxi.png" style="width: 100%;"/> 
+                          <img src="http://43.204.227.16:5000/uploads/assets/taxi.png" style="width: 100%;"/> 
                         </div>
                       </td>
                     </tr>

@@ -21,3 +21,21 @@ export const sendEmail = async (emailOptions: any) => {
 
   console.log("Message sent: %s", info.messageId);
 };
+
+export const sendEmailWithAttachments = async (emailOptions: any) => {
+  let info = await transporter.sendMail({
+    from: '"Bombay Taxi Company" <contact@bombaytaxicompany.com>',
+    to: emailOptions.to,
+    subject: emailOptions.subject,
+    text: emailOptions.message,
+    html: `${emailOptions.message}`,
+    attachments: [
+      {  
+        filename: 'invoice.pdf',
+        path: emailOptions.attachment
+      },
+    ]
+  });
+
+  console.log("Message sent with attachment: %s", info.messageId);
+};

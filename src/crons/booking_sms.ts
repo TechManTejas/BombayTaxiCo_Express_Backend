@@ -4,6 +4,8 @@ import User, { IUser } from '../models/user.model';
 import { ITaxi } from '../models/taxi.model';
 import { IDriver } from '../models/driver.model';
 import { client } from '../twilio/client';
+import { sendEmail } from '../email/sendEmail';
+import rideDetails from '../email/rideDetails';
 
 const startBookingSMSCron = () => {
 
@@ -26,8 +28,6 @@ const startBookingSMSCron = () => {
                 .populate('taxi_id')
                 .populate('driver_id')
                 .exec();
-
-            // console.log(bookingsToday);
 
             // Filter bookings based on pick_up_time
             const currentTime = new Date();
@@ -73,7 +73,7 @@ const startBookingSMSCron = () => {
 
                 let message = `Bombay Taxi Co.™️\n\n` +
                     `ᴅᴇᴀʀ ᴄᴜꜱᴛᴏᴍᴇʀ,\n\n` +
-                    `Thank You For Choosing InterCityCab !\n\n` +
+                    `Thank You For Choosing Bombay Taxi Company !\n\n` +
                     `ᴄᴀʙ & ᴅʀɪᴠᴇʀ ᴅᴇᴛᴀɪʟꜱ,\n\n` +
                     `Cab Type: ${taxi?.taxi_type_id.name || 'N/A'}\n` +
                     `Cab No.: ${taxi?.taxi_no || 'N/A'}\n` +
@@ -95,6 +95,18 @@ const startBookingSMSCron = () => {
                         to: `+91${user?.mobile_no}`
                     })
                     .then((message: any) => console.log(message.sid))
+
+                const bookingDetails = {
+                    taxi: taxi,
+                    driver: driver
+                }
+
+                // Send Email
+                await sendEmail({
+                    to: user.email_id,
+                    subject: "Your Ride Details",
+                    message: rideDetails(bookingDetails)
+                });
 
                 // Set the notified attribute to true for the booked object
                 booking.notified = true;

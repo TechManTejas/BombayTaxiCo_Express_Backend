@@ -37,7 +37,7 @@ app.use(cors({
 app.use(bodyParser.json()); // Use body-parser middleware to parse JSON bodies
 app.use(bodyParser.urlencoded({ extended: true })); // Use body-parser middleware to parse URL-encoded bodies
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 80;
 
 mongoose.connection.on('error', console.error.bind(console, 'MongoDB connection error:'));
 
@@ -84,11 +84,11 @@ const ca = fs.readFileSync('ca_bundle.crt', 'utf8');
 const credentials = { key: privateKey, cert: certificate, ca: ca };
 
 // Create an HTTPS server
-const server = https.createServer(credentials, app);
+// const server = https.createServer(credentials, app);
 // 
 
 // Create an HTTP server
-// const server = http.createServer(app);
+const server = http.createServer(app);
 
 startBookingSMSCron()
 

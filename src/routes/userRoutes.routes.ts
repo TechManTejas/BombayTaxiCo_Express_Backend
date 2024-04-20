@@ -1,5 +1,5 @@
 import express from 'express';
-import { getUserDetails, registerUser, signinUser } from '../controllers/user.controller';
+import { getUserDetails, registerOrSignInUser, registerUser, signinUser, verifyOTP } from '../controllers/user.controller';
 import { authenticateToken } from '../middleware/auth.middleware';
 import { generateCRUDRoutes } from '../utils/simplecrud.controller';
 import User from '../models/user.model';
@@ -8,9 +8,10 @@ import User from '../models/user.model';
 const router = express.Router();
 
 // Define routes
-router.post('/register', registerUser);
-router.post('/signin', signinUser);
+router.post('/register', registerOrSignInUser);
+router.post('/verify-otp', verifyOTP);  
 
+router.post('/signin', signinUser);
 router.use('/', generateCRUDRoutes(User));
 
 // Protecteds route that requires authentication

@@ -62,9 +62,9 @@ app.use('/invoices', invoiceRoutes);
 app.use('/emails', emailRoutes);
 
 
-app.get('/.well-known/pki-validation/92DEEA071D42831652A0219C623EF653.txt', (req, res) => {
+app.get('/.well-known/pki-validation/2DC175DFC7B30A058467A803ADCCFD76.txt', (req, res) => {
   // Assuming your text file is named 'example.txt' in the root directory
-  const filePath = '92DEEA071D42831652A0219C623EF653.txt';
+  const filePath = '2DC175DFC7B30A058467A803ADCCFD76.txt';
 
   fs.readFile(filePath, 'utf8', (err, data) => {
     if (err) {

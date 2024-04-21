@@ -43,6 +43,7 @@ router.post('/search', async (req: Request, res: Response) => {
       const dateDifference = isRoundTrip ? Math.ceil(((new Date(returnDate) as any) - (new Date(pickupDate) as any)) / (1000 * 60 * 60 * 24)) : 0;
       // Multiply the distance by the date difference for round trips
       totalDistance = isRoundTrip ? Math.max((dateDifference + 1) * minimumBillableKm, distance) : distance;
+      console.log("DISTANCE IS SEARCH", totalDistance)
     }
 
     // Get all taxi types
@@ -52,6 +53,8 @@ router.post('/search', async (req: Request, res: Response) => {
     const rates = taxiTypes.map((taxiType: ITaxiType) => {
 
       const originalPrice = totalDistance * taxiType.price_km;
+
+      
       // Calculate discounted price based on discount_percentage
       const discountPercentage = taxiType.discount_percentage || 0;
       const discountedPrice = Math.ceil(originalPrice * ((100 - discountPercentage) / 100));

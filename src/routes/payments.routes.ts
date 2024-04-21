@@ -16,8 +16,6 @@ router.post("/orders", async (req, res) => {
 
     const { route_id, requested_taxi_type, payment, trip_type, pick_up_date, return_date, hourly_package, coupon_id } = req.body;
 
-    console.log(req.body)
-
     try {
 
         let route;
@@ -48,7 +46,8 @@ router.post("/orders", async (req, res) => {
             if (trip_type === 'Round Trip') {
                 const daysDifference = Math.ceil(((new Date(return_date) as any) - (new Date(pick_up_date) as any)) / (1000 * 60 * 60 * 24));
                 distance = Math.max((daysDifference + 1) * minimumBillableKm, route?.round_trip_km)
-                amount = ((distance / 2) * (daysDifference + 1)) * taxiType.price_km;
+                amount = distance * taxiType.price_km;
+                console.log("DISTANCE IS PAYMENT:- ", distance)
             } else {
                 distance = route?.one_way_trip_km || 0;
                 amount = distance * taxiType.price_km;

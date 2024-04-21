@@ -2,20 +2,22 @@
 import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import User from "../models/user.model";
-import { client } from '../twilio/client';
-import { sendEmail } from '../email/sendEmail';
+import { client } from "../twilio/client";
+import { sendEmail } from "../email/sendEmail";
 
 // In-memory store for OTPs
 interface OTPEntry {
   otp: string;
   mobile_no: string;
   email_id: string;
+  name: string;
   expiration: Date;
 }
 
 var otpStore: OTPEntry[] = [];
 
-const generateOTP = (): string => Math.floor(100000 + Math.random() * 900000).toString();
+const generateOTP = (): string =>
+  Math.floor(100000 + Math.random() * 900000).toString();
 
 // Function to send OTP via email
 const sendOTPEmail = async (email: string, otp: string): Promise<void> => {
@@ -23,7 +25,7 @@ const sendOTPEmail = async (email: string, otp: string): Promise<void> => {
   await sendEmail({
     to: email,
     subject: "Verify your account",
-    message
+    message,
   });
 };
 
@@ -31,38 +33,52 @@ const sendOTPEmail = async (email: string, otp: string): Promise<void> => {
 const sendOTPSMS = async (mobile: string, otp: string): Promise<void> => {
   await client.messages.create({
     body: `Your verification code is: ${otp}`,
-    from: '+13303574214',
-    to: mobile
+    from: "+13303574214",
+    to: mobile,
   });
 };
 
-const addOTPToStore = (mobile_no: string, email_id: string, otp: string): void => {
+const addOTPToStore = (
+  mobile_no: string,
+  email_id: string,
+  name: string,
+  otp: string
+): void => {
   const expiration = new Date(new Date().getTime() + 5 * 60000); // OTP expires in 5 minutes
-  otpStore.push({ mobile_no, email_id, otp, expiration });
+  otpStore.push({ mobile_no, email_id, name, otp, expiration });
 };
 
 const removeExpiredOTPs = (): void => {
   const now = new Date();
-  otpStore = otpStore.filter(otp => otp.expiration > now);
+  otpStore = otpStore.filter((otp) => otp.expiration > now);
 };
 
-export const registerOrSignInUser = async (req: Request, res: Response): Promise<void> => {
+export const registerOrSignInUser = async (
+  req: Request,
+  res: Response
+): Promise<void> => {
   try {
     const { mobile_no, email_id, name } = req.body;
 
-    const existingUser = await User.findOne({ $or: [{ mobile_no }, { email_id }] });
+    const existingUser = await User.findOne({
+      $or: [{ mobile_no }, { email_id }],
+    });
 
-    if (existingUser) {
-      res.status(409).json({ message: "User already exists, signing in." });
-      return;
+    if (email_id) {
+      if (existingUser) {
+        res.status(409).json({ message: "User already exists, please login." });
+        return;
+      }
     }
 
     const otp = generateOTP();
     if (email_id) await sendOTPEmail(email_id, otp);
-    if (mobile_no) await sendOTPSMS(`+91${mobile_no}`, otp);
-    addOTPToStore(mobile_no, email_id, otp);
+    if (mobile_no === '7666674367') await sendOTPSMS(`+91${mobile_no}`, otp);
+    addOTPToStore(mobile_no, email_id, name, otp);
 
-    res.status(200).json({ message: "OTP sent, please verify to complete registration." });
+    res
+      .status(200)
+      .json({ message: "OTP sent, please verify to complete registration." });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
@@ -70,15 +86,18 @@ export const registerOrSignInUser = async (req: Request, res: Response): Promise
 };
 
 export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
-  const { mobile_no, email_id, name, otp } = req.body;
+
+  console.log(otpStore)
+
+  const { otp } = req.body;
 
   // Remove expired OTPs before verification
   removeExpiredOTPs();
 
   // Find and verify OTP
-  const otpEntry = otpStore.find(entry =>
-    entry.otp === otp &&
-    (entry.mobile_no === mobile_no || entry.email_id === email_id)
+  const otpEntry = otpStore.find(
+    (entry) =>
+      entry.otp === otp 
   );
 
   if (!otpEntry) {
@@ -86,25 +105,78 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
     return;
   }
 
+  const mobile_no = otpEntry.mobile_no
+  const email_id = otpEntry.email_id
+  const name = otpEntry.name
+
   // Create user and sign them in
   const newUser = new User({ mobile_no, email_id, name });
   await newUser.save();
 
   // Generate JWT token
-  const token = jwt.sign({ userId: newUser._id }, process.env.JWT_SECRET_KEY || "your-secret-key");
+  const token = jwt.sign(
+    { userId: newUser._id },
+    process.env.JWT_SECRET_KEY || "your-secret-key"
+  );
 
   // Prepare user information
   const userInfo = {
     _id: newUser._id,
-    name: newUser.name,
-    email: newUser.email_id,
-    mobile_no: newUser.mobile_no,
+    name: name,
+    email: email_id,
+    mobile_no: mobile_no,
   };
 
   res.status(201).json({
     message: "User registered and signed in successfully",
     token,
-    user: userInfo
+    user: userInfo,
+  });
+};
+
+export const verifyRegisteredUser = async (req: Request, res: Response): Promise<void> => {
+  const { mobile_no, otp } = req.body;
+
+  // Remove expired OTPs before verification
+  removeExpiredOTPs();
+
+  // Find and verify OTP
+  const otpEntry = otpStore.find(entry =>
+      entry.otp === otp &&
+      (entry.mobile_no === mobile_no)
+  );
+
+  if (!otpEntry) {
+      res.status(400).json({ message: "Invalid or expired OTP." });
+      return;
+  }
+
+  // Find the user in the database based on the mobile number or email id
+  const user = await User.findOne({ mobile_no });
+
+  if (!user) {
+      res.status(404).json({ message: "User not found, Please Register" });
+      return;
+  }
+
+  // Generate a JWT token for the found user
+  const token = jwt.sign(
+      { userId: user._id },
+      process.env.JWT_SECRET_KEY || "your-secret-key"
+  );
+
+  // Prepare user information
+  const userInfo = {
+      _id: user._id,
+      name: user.name,
+      email: user.email_id,
+      mobile_no: user.mobile_no,
+  };
+
+  res.status(200).json({
+      message: "OTP verified successfully",
+      token,
+      user: userInfo,
   });
 };
 
@@ -174,9 +246,9 @@ export const signinUser = async (
     };
 
     // Send the token in the response
-    res.status(200).json({ 
-      token, 
-      user: userInfo 
+    res.status(200).json({
+      token,
+      user: userInfo,
     });
   } catch (error) {
     // Handle errors and send an error response

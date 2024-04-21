@@ -8,6 +8,7 @@ import { IRoute } from './route.model';
 export enum BookingStatus {
   New = 'New',
   Confirmed = 'Confirmed',
+  Resheduled = 'Resheduled',
   OnRide = 'On Ride',
   Completed = 'Completed',
   Cancelled = 'Cancelled',

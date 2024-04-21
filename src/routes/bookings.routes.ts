@@ -17,6 +17,8 @@ router.get('/user-bookings', BookingController.getUserBookings);
 
 router.post('/assign-taxi-driver', BookingController.assignTaxiDriver);
 
+router.post('/reassign-taxi-driver', BookingController.reassignTaxiDriver);
+
 router.post('/start-trip', BookingController.startTrip);
 
 router.post('/end-trip', BookingController.endTrip);

@@ -5,6 +5,7 @@ import { sendEmail, sendEmailWithAttachments } from "../email/sendEmail";
 import invoice from "../email/invoice";
 import { IBooking, TripType } from "../models/booking.model";
 import cancelRide from "../email/cancelRide";
+import feedback from "../email/feedback";
 
 const upload = multer({ dest: "uploads/invoices/" });
 
@@ -78,10 +79,7 @@ router.post("/send-email-cancel-ride", async (req, res) => {
   }
 });
 
-router.post(
-  "/send-email-invoice",
-  upload.single("invoice"),
-  async (req, res) => {
+router.post("/send-email-invoice", upload.single("invoice"), async (req, res) => {
     // Assuming the email address is sent in the request body
     const emailAddress = req.body.email;
 
@@ -101,6 +99,23 @@ router.post(
     }
   }
 );
+
+router.post("/send-feedback-email", async (req, res) => {
+  // Assuming the email address is sent in the request body
+  const emailAddress = req.body.email;
+
+  try {
+    await sendEmail({
+      to: emailAddress,
+      subject: "Customer Feedback",
+      message: feedback(),
+    });
+    res.send({ message: "Feedback email sent successfully." });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send({ message: "Failed to send feedback email." });
+  }
+});
 
 // Export the router
 export default router;

@@ -7,6 +7,8 @@ import jwt from "jsonwebtoken";
 import mongoose, { Query } from "mongoose";
 import { sendEmail } from "../email/sendEmail";
 import confirmationEmail from "../email/confirmation";
+import rideDetails from "../email/rideDetails";
+import reassign from "../email/reassign";
 
 // Function to get bookings associated with the user with pagination, search, and filter
 export const getUserBookings = async (req: Request, res: Response) => {
@@ -133,8 +135,6 @@ export const getUserBookingStatusCounts = async (
         },
       },
     ]);
-
-    console.log(result);
 
     // Create a record object with booking_status as keys and count as values
     const statusCounts: Record<string, number> = {};
@@ -268,13 +268,11 @@ export const assignTaxiDriver = async (req: Request, res: Response) => {
           journey: route,
           taxi: updatedBooking?.taxi_id?.taxi_type_id.name,
           pickup_address: updatedBooking.pickup_address,
-          drop_address: updatedBooking.drop_address ?? '-',
+          drop_address: updatedBooking.drop_address ?? "-",
           pick_up_date: updatedBooking.pick_up_date,
           pick_up_time: updatedBooking.pick_up_time,
           return_date: updatedBooking.return_date,
         };
-
-        console.log("Updated Booking", updatedBooking);
 
         const emailHtmlContent = confirmationEmail(bookingDetails);
         await sendEmail({
@@ -287,6 +285,179 @@ export const assignTaxiDriver = async (req: Request, res: Response) => {
       // Commit the transaction
       await session.commitTransaction();
       session.endSession();
+
+      // Send success response
+      res
+        .status(200)
+        .json({ message: "Assignment successful, Booking Confirm" });
+    } catch (error) {
+      // Rollback the transaction on error
+      await session.abortTransaction();
+      session.endSession();
+
+      console.error("Error:", error);
+      res.status(500).json({ message: "Error assigning taxi and driver" });
+    }
+  } catch (error) {
+    console.error("Error starting transaction:", error);
+    res.status(500).json({ message: "Error starting transaction" });
+  }
+};
+
+export const reassignTaxiDriver = async (req: Request, res: Response) => {
+  const { booking_id, driver_id, taxi_id } = req.body;
+
+  console.log(req.body);
+
+  try {
+    // Start a transaction
+    const session = await Booking.startSession();
+    session.startTransaction();
+
+    try {
+      // Retrieve current booking with existing driver and taxi
+      const currentBooking = await Booking.findById(booking_id).session(
+        session
+      );
+
+      const currentDriverId = currentBooking?.driver_id;
+      const currentTaxiId = currentBooking?.taxi_id;
+
+      // Assign driver_id and taxi_id to the booking object
+      const updatedBooking = await Booking.findByIdAndUpdate(
+        booking_id,
+        { $set: { driver_id, taxi_id, booking_status: "Confirmed" } },
+        { new: true, session }
+      )
+        .populate({
+          path: "taxi_id",
+          populate: { path: "taxi_type_id", select: "name" },
+        })
+        .populate(
+         "driver_id",
+        )
+        .populate({
+          path: "route_id",
+          populate: [
+            { path: "from_id", select: "name -_id" },
+            { path: "to_id", select: "name -_id" },
+          ],
+        })
+        .populate("user_id");
+
+      if (updatedBooking) {
+        // Remove booking from previously assigned driver and check remaining trips
+        const oldDriver = await Driver.findByIdAndUpdate(
+          currentDriverId,
+          { $pull: { assigned_trips: booking_id } },
+          { new: true, session }
+        );
+
+        // Remove booking from previously assigned taxi and check remaining trips
+        const oldTaxi = await Taxi.findByIdAndUpdate(
+          currentTaxiId,
+          { $pull: { assigned_trips: booking_id } },
+          { new: true, session }
+        );
+
+        // Add booking to new driver's assigned trips
+        await Driver.findByIdAndUpdate(
+          driver_id,
+          { $push: { assigned_trips: booking_id } },
+          { session }
+        );
+
+        // Add booking to new taxi's assigned trips
+        await Taxi.findByIdAndUpdate(
+          taxi_id,
+          { $push: { assigned_trips: booking_id } },
+          { session }
+        );
+
+        // Update the status of the old driver and taxi if they have no more assigned trips
+        if (oldDriver?.assigned_trips.length === 0) {
+          await Driver.findByIdAndUpdate(
+            currentDriverId,
+            { $set: { driver_status: "Available" } },
+            { session }
+          );
+        }
+
+        if (oldTaxi?.assigned_trips.length === 0) {
+          await Taxi.findByIdAndUpdate(
+            currentTaxiId,
+            { $set: { taxi_status: "Available" } },
+            { session }
+          );
+        }
+
+        // Update the status of the new driver and taxi to "Assigned"
+        await Driver.findByIdAndUpdate(
+          driver_id,
+          { $set: { driver_status: "Assigned" } },
+          { session }
+        );
+
+        await Taxi.findByIdAndUpdate(
+          taxi_id,
+          { $set: { taxi_status: "Assigned" } },
+          { session }
+        );
+
+        let route = "";
+        if (updatedBooking.trip_type === TripType.OneWay) {
+          route =
+            updatedBooking.route_id?.from_id.name +
+            " → " +
+            updatedBooking.route_id?.to_id.name;
+        } else if (updatedBooking.trip_type === TripType.Round) {
+          route =
+            updatedBooking.route_id?.from_id.name +
+            " → " +
+            updatedBooking.route_id?.to_id.name +
+            " → " +
+            updatedBooking.route_id?.from_id.name;
+        } else {
+          route = updatedBooking.route_id?.from_id.name + " → ";
+        }
+
+        // Send the confirmation email
+        const bookingDetails = {
+          trip_type: updatedBooking.trip_type,
+          journey: route,
+          taxi: updatedBooking?.taxi_id?.taxi_type_id.name,
+          pickup_address: updatedBooking.pickup_address,
+          drop_address: updatedBooking.drop_address ?? "-",
+          pick_up_date: updatedBooking.pick_up_date,
+          pick_up_time: updatedBooking.pick_up_time,
+          return_date: updatedBooking.return_date,
+        };
+
+        const emailHtmlContent = confirmationEmail(bookingDetails);
+        await sendEmail({
+          to: updatedBooking.user_id.email_id,
+          subject: "Your Taxi Booking is Confirmed",
+          message: emailHtmlContent,
+        });
+      }
+
+      // Commit the transaction
+      await session.commitTransaction();
+      session.endSession();
+
+      const bookingDetails = {
+        taxi: updatedBooking?.taxi_id,
+        driver: updatedBooking?.driver_id,
+      };
+
+      console.log(bookingDetails)
+
+      // Send Email
+      await sendEmail({
+        to: updatedBooking?.user_id?.email_id,
+        subject: "Your New Ride Details",
+        message: reassign(bookingDetails),
+      });
 
       // Send success response
       res

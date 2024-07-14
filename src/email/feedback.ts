@@ -91,7 +91,7 @@ const feedback = () => {
         <div
           style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
           <div style="width: 100%; padding-top: 20px; display: flex; justify-content: center;">
-              <img src="http://localhost:5000/uploads/assets/logo.jpg" style="width: 60%; "/>
+              <img src="https://43.204.227.16:5000/uploads/assets/logo.jpg" style="width: 60%; "/>
           </div>
           <div style="background-color: transparent">
             <div class="u-row"

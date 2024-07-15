@@ -23,6 +23,7 @@ import driverRoutes from './routes/driver.routes';
 import bookingRoutes from './routes/bookings.routes'
 import settingsRoutes from './routes/settings.routes';
 import paymentRoutes from './routes/payments.routes';
+import pricesRoutes from './routes/prices.routes';
 import invoiceRoutes from './routes/invoices.routes';
 import emailRoutes from './routes/emails.routes'
 import startBookingSMSCron from './crons/booking_sms';
@@ -58,6 +59,7 @@ app.use('/drivers', driverRoutes);
 app.use('/bookings', bookingRoutes);
 app.use('/settings', settingsRoutes);
 app.use('/payments', paymentRoutes);
+app.use('/prices', pricesRoutes);
 app.use('/invoices', invoiceRoutes);
 app.use('/emails', emailRoutes);
 

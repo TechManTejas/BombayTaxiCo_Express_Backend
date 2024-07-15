@@ -12,9 +12,7 @@ export interface ITaxiType extends Document {
   image: string;
   name: string;
   description: string;
-  price_km: number;
   price_hour: number;
-  extra_km_charges: number;
   discount_percentage: number;
   car_features: ICarFeature[];
 }
@@ -37,15 +35,7 @@ const taxiTypeSchema = new Schema<ITaxiType>({
     type: String,
     required: true,
   },
-  price_km: {
-    type: Number,
-    required: true,
-  },
   price_hour: {
-    type: Number,
-    required: true,
-  },
-  extra_km_charges: {
     type: Number,
     required: true,
   },

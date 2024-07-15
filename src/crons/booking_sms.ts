@@ -91,13 +91,15 @@ const startBookingSMSCron = () => {
 
         console.log(message);
 
-        client.messages
-          .create({
+        try {
+          await client.messages.create({
             body: message,
             from: "+13303574214",
             to: `+91${user?.mobile_no}`,
-          })
-          .then((message: any) => console.log(message.sid));
+          });
+        } catch (twilioError) {
+          console.error("Error sending SMS via Twilio:", twilioError);
+        }
 
         const bookingDetails = {
           taxi: taxi,
@@ -106,11 +108,15 @@ const startBookingSMSCron = () => {
 
         // Send Email
         if (user) {
-          await sendEmail({
-            to: user.email_id,
-            subject: "Your Ride Details",
-            message: rideDetails(bookingDetails),
-          });
+          try {
+            await sendEmail({
+              to: user.email_id,
+              subject: "Your Ride Details",
+              message: rideDetails(bookingDetails),
+            });
+          } catch (emailError) {
+            console.error("Error sending email:", emailError);
+          }
         }
 
         // Set the notified attribute to true for the booked object

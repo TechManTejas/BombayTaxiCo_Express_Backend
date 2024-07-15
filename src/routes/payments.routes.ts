@@ -8,6 +8,7 @@ import Booking from '../models/booking.model';
 import jwt, { JwtPayload } from 'jsonwebtoken';
 import SingletonSettings from '../models/settings.model';
 import Coupon, { ICoupon } from '../models/coupon.model';
+import TaxiTypePrice from '../models/price.model';
 
 // Create a router instance
 const router = express.Router();
@@ -16,13 +17,15 @@ router.post("/orders", async (req, res) => {
 
     const { route_id, requested_taxi_type, payment, trip_type, pick_up_date, return_date, hourly_package, coupon_id } = req.body;
 
+    console.log(req.body)
+
     try {
 
         let route;
 
-        // Fetch taxi type details
-        const taxiType = await TaxiType.findById(requested_taxi_type);
-        if (!taxiType) return res.status(400).json({ msg: "Invalid taxi type ID" });
+        // Fetch the TaxiTypePrice details
+        const taxiTypePrice = await TaxiTypePrice.findOne({ route_id, taxi_type_id: requested_taxi_type, status: true }).populate('taxi_type_id');
+        if (!taxiTypePrice) return res.status(400).json({ msg: "Invalid route ID or taxi type ID" });
 
         // Fetch settings
         const settingsResponse = await axios.get('https://43.204.227.16:5000/settings/get');
@@ -37,7 +40,7 @@ router.post("/orders", async (req, res) => {
         if (trip_type === "Hourly Rental") {
             const [hours, _, kms, __] = hourly_package.split(' ').map((value: string) => parseInt(value));
             distance = kms; // For hourly rental, distance is based on kms
-            amount = distance * taxiType.price_km;
+            amount = distance * taxiTypePrice.price_km;
         } else {
             // Fetch route details
             route = await Route.findById(route_id);
@@ -46,16 +49,16 @@ router.post("/orders", async (req, res) => {
             if (trip_type === 'Round Trip') {
                 const daysDifference = Math.ceil(((new Date(return_date) as any) - (new Date(pick_up_date) as any)) / (1000 * 60 * 60 * 24));
                 distance = Math.max((daysDifference + 1) * minimumBillableKm, route?.round_trip_km)
-                amount = distance * taxiType.price_km;
+                amount = distance * taxiTypePrice.price_km;
                 console.log("DISTANCE IS PAYMENT:- ", distance)
             } else {
                 distance = route?.one_way_trip_km || 0;
-                amount = distance * taxiType.price_km;
+                amount = distance * taxiTypePrice.price_km;
             }
         }
 
         // Apply discount if applicable
-        const discountPercentage = taxiType.discount_percentage;
+        const discountPercentage = taxiTypePrice.taxi_type_id.discount_percentage;
         if (discountPercentage > 0) {
             const discountAmount = (amount * discountPercentage) / 100;
             amount -= discountAmount;

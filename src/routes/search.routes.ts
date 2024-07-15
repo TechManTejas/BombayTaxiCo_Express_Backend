@@ -2,6 +2,7 @@ import express, { Request, Response } from 'express';
 import Route, { IRoute } from '../models/route.model';
 import TaxiType, { ITaxiType } from '../models/taxiType.model';
 import axios from 'axios';
+import TaxiTypePrice, { ITaxiTypePriceModel } from '../models/price.model';
 
 const router = express.Router();
 
@@ -46,21 +47,24 @@ router.post('/search', async (req: Request, res: Response) => {
       console.log("DISTANCE IS SEARCH", totalDistance)
     }
 
-    // Get all taxi types
-    const taxiTypes: ITaxiType[] = await TaxiType.find();
+    // Fetch all taxi type prices for the found route
+    const taxiTypePrices: ITaxiTypePriceModel[] = await TaxiTypePrice.find({ route_id: route?._id, status: true }).populate({
+      path: 'taxi_type_id',
+      populate: { path: 'car_features' } 
+    });
 
     // Calculate rates for each taxi type
-    const rates = taxiTypes.map((taxiType: ITaxiType) => {
+    const rates = taxiTypePrices.map((taxiTypePrice: ITaxiTypePriceModel) => {
+      const taxiType = taxiTypePrice.taxi_type_id as ITaxiType;
+      const originalPrice = totalDistance * taxiTypePrice.price_km;
 
-      const originalPrice = totalDistance * taxiType.price_km;
-
-      
       // Calculate discounted price based on discount_percentage
-      const discountPercentage = taxiType.discount_percentage || 0;
+      const discountPercentage = taxiTypePrice.taxi_type_id.discount_percentage || 0;
       const discountedPrice = Math.ceil(originalPrice * ((100 - discountPercentage) / 100));
 
       return {
         taxiType: taxiType,
+        extraKmCharges: taxiTypePrice.extra_km_charges,
         originalPrice,
         discountedPrice,
       };

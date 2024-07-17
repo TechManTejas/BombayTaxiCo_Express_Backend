@@ -14,16 +14,32 @@ router.post('/search', async (req: Request, res: Response) => {
 
     let route: IRoute | null = null
     let totalDistance: number = 0;
+    let rates: any[] = [];
 
     if (tripType === 'Hourly Rental') {
       // Get the hourly rental package details
       const [hours, _, kms, __] = hourlyPackage.split(' ').map((value: string) => parseInt(value));
       totalDistance = kms; // For hourly rental, distance is based on kms
       console.log(hours, kms)
-    }
 
+      // Fetch all taxi types
+      const taxiTypes: ITaxiType[] = await TaxiType.find();
 
-    if (tripType !== "Hourly Rental") {
+      // Calculate rates for each taxi type
+      rates = taxiTypes.map((taxiType: ITaxiType) => {
+        const originalPrice = hours * taxiType.price_hour;
+
+        // Calculate discounted price based on discount_percentage
+        const discountPercentage = taxiType.discount_percentage || 0;
+        const discountedPrice = Math.ceil(originalPrice * ((100 - discountPercentage) / 100));
+
+        return {
+          taxiType: taxiType,
+          originalPrice,
+          discountedPrice,
+        };
+      });
+    } else {
       // Find the route based on fromId and toId
       route = await Route.findOne({ from_id: fromId, to_id: toId, route_status: 'Active' });
 
@@ -45,30 +61,30 @@ router.post('/search', async (req: Request, res: Response) => {
       // Multiply the distance by the date difference for round trips
       totalDistance = isRoundTrip ? Math.max((dateDifference + 1) * minimumBillableKm, distance) : distance;
       console.log("DISTANCE IS SEARCH", totalDistance)
+
+      // Fetch all taxi type prices for the found route
+      const taxiTypePrices: ITaxiTypePriceModel[] = await TaxiTypePrice.find({ route_id: route?._id, status: true }).populate({
+        path: 'taxi_type_id',
+        populate: { path: 'car_features' }
+      });
+
+      // Calculate rates for each taxi type
+      rates = taxiTypePrices.map((taxiTypePrice: ITaxiTypePriceModel) => {
+        const taxiType = taxiTypePrice.taxi_type_id as ITaxiType;
+        const originalPrice = totalDistance * taxiTypePrice.price_km;
+
+        // Calculate discounted price based on discount_percentage
+        const discountPercentage = taxiTypePrice.taxi_type_id.discount_percentage || 0;
+        const discountedPrice = Math.ceil(originalPrice * ((100 - discountPercentage) / 100));
+
+        return {
+          taxiType: taxiType,
+          extraKmCharges: taxiTypePrice.extra_km_charges,
+          originalPrice,
+          discountedPrice,
+        };
+      });
     }
-
-    // Fetch all taxi type prices for the found route
-    const taxiTypePrices: ITaxiTypePriceModel[] = await TaxiTypePrice.find({ route_id: route?._id, status: true }).populate({
-      path: 'taxi_type_id',
-      populate: { path: 'car_features' } 
-    });
-
-    // Calculate rates for each taxi type
-    const rates = taxiTypePrices.map((taxiTypePrice: ITaxiTypePriceModel) => {
-      const taxiType = taxiTypePrice.taxi_type_id as ITaxiType;
-      const originalPrice = totalDistance * taxiTypePrice.price_km;
-
-      // Calculate discounted price based on discount_percentage
-      const discountPercentage = taxiTypePrice.taxi_type_id.discount_percentage || 0;
-      const discountedPrice = Math.ceil(originalPrice * ((100 - discountPercentage) / 100));
-
-      return {
-        taxiType: taxiType,
-        extraKmCharges: taxiTypePrice.extra_km_charges,
-        originalPrice,
-        discountedPrice,
-      };
-    });
 
     res.json({ taxi_rates: rates, route: route, distance: totalDistance });
   } catch (error) {

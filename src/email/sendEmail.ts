@@ -5,14 +5,14 @@ export const transporter = nodemailer.createTransport({
   port: 465, // SMTP port (typically 587 for secure, 25 for non-secure)
   secure: true, // true for 465, false for other ports
   auth: {
-    user: 'contact@bombaytaxicompany.com', // SMTP username
+    user: 'contact@bombaytaxico.com', // SMTP username
     pass: 'Changeoncedone@123', // SMTP password
   },
 });
 
 export const sendEmail = async (emailOptions: any) => {
   let info = await transporter.sendMail({
-    from: '"Bombay Taxi Company" <contact@bombaytaxicompany.com>', // sender address
+    from: '"Bombay Taxi Company" <contact@bombaytaxico.com>', // sender address
     to: emailOptions.to, // list of receivers
     subject: emailOptions.subject, // Subject line
     text: emailOptions.message, // plain text body
@@ -24,7 +24,7 @@ export const sendEmail = async (emailOptions: any) => {
 
 export const sendEmailWithAttachments = async (emailOptions: any) => {
   let info = await transporter.sendMail({
-    from: '"Bombay Taxi Company" <contact@bombaytaxicompany.com>',
+    from: '"Bombay Taxi Company" <contact@bombaytaxico.com>',
     to: emailOptions.to,
     subject: emailOptions.subject,
     text: emailOptions.message,

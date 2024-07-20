@@ -1,6 +1,5 @@
 // Import necessary libraries and modules
 import express, { Request, Response } from 'express';
-import { createCoupon, getAllCoupons, getCouponById, updateCouponById, deleteCouponById } from '../controllers/coupon.controller';
 import { generateCRUDRoutes } from '../utils/simplecrud.controller';
 import Coupon, { ICoupon } from '../models/coupon.model';
 
@@ -14,7 +13,7 @@ router.post('/apply-coupon', async (req: Request, res: Response) => {
         // Check if the coupon exists
         const coupon: ICoupon | null = await Coupon.findOne({ name: couponCode });
 
-        console.log(couponCode, amount, coupon)
+        console.log(couponCode, amount, coupon);
 
         if (!coupon) {
             return res.status(404).json({ message: 'Coupon not found' });
@@ -23,6 +22,13 @@ router.post('/apply-coupon', async (req: Request, res: Response) => {
         // Check if the coupon is active
         if (coupon.status !== 'Active') {
             return res.status(400).json({ message: 'Coupon is not active' });
+        }
+
+        const currentDate = new Date();
+
+        // Check if the coupon is valid for the current date
+        if (!coupon.forever && (currentDate < coupon.from_date || currentDate > coupon.to_date)) {
+            return res.status(400).json({ message: 'Coupon is not valid at this time' });
         }
 
         // Apply the coupon logic here (modify as per your coupon logic)
@@ -36,7 +42,7 @@ router.post('/apply-coupon', async (req: Request, res: Response) => {
     }
 });
 
-router.use('/', generateCRUDRoutes(Coupon))
+router.use('/', generateCRUDRoutes(Coupon));
 
 // Export the router
 export default router;

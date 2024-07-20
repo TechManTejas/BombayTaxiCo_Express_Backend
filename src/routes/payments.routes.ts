@@ -28,7 +28,7 @@ router.post("/orders", async (req, res) => {
         if (!taxiTypePrice) return res.status(400).json({ msg: "Invalid route ID or taxi type ID" });
 
         // Fetch settings
-        const settingsResponse = await axios.get('https://43.204.227.16:5000/settings/get');
+        const settingsResponse = await axios.get('https://api.bombaytaxico.com/settings/get');
         const settings = settingsResponse.data.settings;
         const minimumBillableKm = parseInt(settings.minimumBillableKm)
         if (!settings) return res.status(500).json({ msg: "Settings not found" });

@@ -79,11 +79,11 @@ app.get('/.well-known/pki-validation/2DC175DFC7B30A058467A803ADCCFD76.txt', (req
 });
 
 // Specify the paths to your SSL certificate and private key
-const privateKey = fs.readFileSync('private.key', 'utf8');
-const certificate = fs.readFileSync('certificate.crt', 'utf8');
-const ca = fs.readFileSync('ca_bundle.crt', 'utf8');
+const privateKey = fs.readFileSync('/etc/letsencrypt/live/api.bombaytaxico.com/privkey.pem', 'utf8');
+const certificate = fs.readFileSync('/etc/letsencrypt/live/api.bombaytaxico.com/fullchain.pem', 'utf8');
+// const ca = fs.readFileSync('ca_bundle.crt', 'utf8');
 
-const credentials = { key: privateKey, cert: certificate, ca: ca };
+const credentials = { key: privateKey, cert: certificate };
 
 // Create an HTTPS server
 const server = https.createServer(credentials, app);

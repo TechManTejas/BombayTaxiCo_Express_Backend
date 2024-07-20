@@ -1,5 +1,5 @@
 // Import necessary libraries and modules
-import { Schema, model, Document } from 'mongoose';
+import mongoose, { Schema, model, Document } from 'mongoose';
 import { IUser } from './user.model';
 import { ITaxi } from './taxi.model';
 import { IRoute } from './route.model';
@@ -24,7 +24,7 @@ export enum TripType {
 
 // Define the Booking schema
 export interface IBooking extends Document {
-  pickup_city?: Schema.Types.ObjectId,
+  pickup_city?: Schema.Types.ObjectId;
   route_id?: IRoute;
   user_id: IUser;
   coupon_id?: Schema.Types.ObjectId;
@@ -54,19 +54,29 @@ export interface IBooking extends Document {
   pincode?: string;
   address: string;
   notified: boolean;
-  numberOfPassengers: string,
-  numberOfSmallBags: string,
-  numberOfLargeBags: string,
-  seniorCitizen: boolean,
-  womenTraveling: boolean,
-  kidsOnBoard: boolean,
-  englishSpeakingDriver: boolean,
-  carryingPet: boolean,
-  need7Plus1Seater: boolean,
-  carrierOverTop: boolean,
-  bookingForSomeoneElse: boolean,
-  otherDetails: string
+  numberOfPassengers: string;
+  numberOfSmallBags: string;
+  numberOfLargeBags: string;
+  seniorCitizen: boolean;
+  womenTraveling: boolean;
+  kidsOnBoard: boolean;
+  englishSpeakingDriver: boolean;
+  carryingPet: boolean;
+  need7Plus1Seater: boolean;
+  carrierOverTop: boolean;
+  bookingForSomeoneElse: boolean;
+  otherDetails: string;
+  booking_number?: number; // Adding the auto-increment field
 }
+
+// Define the Counter schema for auto-increment
+const counterSchema = new Schema({
+  _id: { type: String, required: true },
+  seq: { type: Number, default: 0 }
+});
+
+// Create the Counter model
+const Counter = model('Counter', counterSchema);
 
 // Define the Booking schema
 const bookingSchema = new Schema<IBooking>({
@@ -112,8 +122,21 @@ const bookingSchema = new Schema<IBooking>({
   carrierOverTop: { type: Boolean, default: false },
   bookingForSomeoneElse: { type: Boolean, default: false },
   otherDetails: { type: String },
+  booking_number: { type: Number }, // Add this line to define the booking_number field
 }, {
   timestamps: true
+});
+
+// Pre-save hook to increment the booking_number
+bookingSchema.pre<IBooking>('save', async function (next) {
+  const doc = this;
+  const counter = await Counter.findByIdAndUpdate(
+    { _id: 'booking_number' },
+    { $inc: { seq: 1 } },
+    { new: true, upsert: true }
+  );
+  doc.booking_number = counter!.seq;
+  next();
 });
 
 // Create and export the Booking model

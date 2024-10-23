@@ -51,6 +51,7 @@ export interface IBooking extends Document {
   gender: string;
   emailId: string;
   contactNumber: string;
+  whatsAppNumber: string;
   pincode?: string;
   address: string;
   notified: boolean;
@@ -107,6 +108,7 @@ const bookingSchema = new Schema<IBooking>({
   gender: { type: String },
   emailId: { type: String },
   contactNumber: { type: String },
+  whatsAppNumber: { type: String },
   pincode: { type: String },
   address: { type: String },
   notified: { type: Boolean, default: false },

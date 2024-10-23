@@ -164,11 +164,6 @@ const invoice = () => {
                           <td
                             style="overflow-wrap:break-word;word-break:break-word;padding:40px 50px 30px;font-family:'Raleway',sans-serif;">
                             <div style="font-size: 14px; line-height: 140%; text-align: justify; word-wrap: break-word;">
-                              <p style="line-height: 140%; font-size: 14px;">
-                                <span style="font-family: 'Open Sans', sans-serif; font-size: 24px; line-height: 22.4px;">
-                                  <strong>You Ride is Completed!</strong>
-                                </span>
-                              </p>
                               <p style="line-height: 140%; font-size: 14px;"> </p>
     
                               <p style="line-height: 140%; font-size: 14px;">

@@ -87,7 +87,6 @@ const credentials = { key: privateKey, cert: certificate };
 
 // Create an HTTPS server
 const server = https.createServer(credentials, app);
-// 
 
 // Create an HTTP server
 // const server = http.createServer(app);

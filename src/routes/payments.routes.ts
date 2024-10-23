@@ -2,7 +2,7 @@ import express from 'express';
 import crypto from 'crypto'
 import { razorpay } from '../payments/razorpay';
 import Route from '../models/route.model';
-import TaxiType from '../models/taxiType.model';
+import TaxiType, { ITaxiType } from '../models/taxiType.model';
 import axios from 'axios';
 import Booking from '../models/booking.model';
 import jwt, { JwtPayload } from 'jsonwebtoken';
@@ -22,10 +22,7 @@ router.post("/orders", async (req, res) => {
     try {
 
         let route;
-
-        // Fetch the TaxiTypePrice details
-        const taxiTypePrice = await TaxiTypePrice.findOne({ route_id, taxi_type_id: requested_taxi_type, status: true }).populate('taxi_type_id');
-        if (!taxiTypePrice) return res.status(400).json({ msg: "Invalid route ID or taxi type ID" });
+        let discountPercentage = 0;
 
         // Fetch settings
         const settingsResponse = await axios.get('https://api.bombaytaxico.com/settings/get');
@@ -33,15 +30,24 @@ router.post("/orders", async (req, res) => {
         const minimumBillableKm = parseInt(settings.minimumBillableKm)
         if (!settings) return res.status(500).json({ msg: "Settings not found" });
 
-
         // Calculate amount based on route and taxi type
         let distance = 0, amount = 0;
 
         if (trip_type === "Hourly Rental") {
+            const taxiType: ITaxiType | null = await TaxiType.findById(requested_taxi_type);
+            if (!taxiType) return res.status(404).json({ msg: "Taxi type not found" });
+
             const [hours, _, kms, __] = hourly_package.split(' ').map((value: string) => parseInt(value));
-            distance = kms; // For hourly rental, distance is based on kms
-            amount = distance * taxiTypePrice.price_km;
+            amount = hours * taxiType.price_hour;
+
+            discountPercentage = taxiType.discount_percentage;
+
         } else {
+
+            // Fetch the TaxiTypePrice details
+            const taxiTypePrice = await TaxiTypePrice.findOne({ route_id, taxi_type_id: requested_taxi_type, status: true }).populate('taxi_type_id');
+            if (!taxiTypePrice) return res.status(400).json({ msg: "Invalid route ID or taxi type ID" });
+
             // Fetch route details
             route = await Route.findById(route_id);
             if (!route) return res.status(400).json({ msg: "Invalid route ID" });
@@ -55,10 +61,11 @@ router.post("/orders", async (req, res) => {
                 distance = route?.one_way_trip_km || 0;
                 amount = distance * taxiTypePrice.price_km;
             }
+
+            discountPercentage = taxiTypePrice.taxi_type_id.discount_percentage;
         }
 
         // Apply discount if applicable
-        const discountPercentage = taxiTypePrice.taxi_type_id.discount_percentage;
         if (discountPercentage > 0) {
             const discountAmount = (amount * discountPercentage) / 100;
             amount -= discountAmount;
@@ -66,18 +73,31 @@ router.post("/orders", async (req, res) => {
 
         // Apply advance payment percentage if payment type is advance
         if (payment === "advance") {
-            amount = Math.round(amount * ((parseInt(settings?.advancePaymentPercentage || '0')) / 100));
+            amount = amount * ((parseInt(settings?.advancePaymentPercentage || '0')) / 100);
         } else if (coupon_id) {
             // Apply coupon discount and round off the amount with no decimal values
             const coupon: ICoupon | null = await Coupon.findById(coupon_id);
+            // Check if coupon exists
             if (coupon) {
+                const today = new Date();
+                
+                // Check if the coupon is inactive or expired
+                if (coupon.status === 'Inactive' || 
+                    (!coupon.forever && coupon.to_date < today)) {
+                    return res.status(400).json({ msg: "Coupon is expired or inactive" });
+                }
+
+                // If the coupon is valid, apply the discount
                 const couponDiscount = Math.round((amount * coupon.discount_perc) / 100);
                 amount -= couponDiscount;
+            } else {
+                // If coupon not found, return an error
+                return res.status(404).json({ msg: "Coupon not found" });
             }
         }
 
         const options = {
-            amount: amount * 100,
+            amount: Math.round(amount) * 100,
             currency: "INR"
         };
 

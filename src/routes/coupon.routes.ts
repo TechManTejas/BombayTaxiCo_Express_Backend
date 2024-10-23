@@ -13,8 +13,6 @@ router.post('/apply-coupon', async (req: Request, res: Response) => {
         // Check if the coupon exists
         const coupon: ICoupon | null = await Coupon.findOne({ name: couponCode });
 
-        console.log(couponCode, amount, coupon);
-
         if (!coupon) {
             return res.status(404).json({ message: 'Coupon not found' });
         }

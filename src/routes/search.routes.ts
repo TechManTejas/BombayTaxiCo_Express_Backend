@@ -20,7 +20,6 @@ router.post('/search', async (req: Request, res: Response) => {
       // Get the hourly rental package details
       const [hours, _, kms, __] = hourlyPackage.split(' ').map((value: string) => parseInt(value));
       totalDistance = kms; // For hourly rental, distance is based on kms
-      console.log(hours, kms)
 
       // Fetch all taxi types
       const taxiTypes: ITaxiType[] = await TaxiType.find();

@@ -164,7 +164,7 @@ const rideDetails = (bookingDetails: any) => {
                         <td
                           style="overflow-wrap:break-word;word-break:break-word;padding:40px 50px 30px;font-family:'Raleway',sans-serif;">
                           <div style="font-size: 14px; line-height: 140%; text-align: justify; word-wrap: break-word;">
-                            <img src="https://api.bombaytaxico.com/uploads/assets/taxi.png" style="width: 100%;"/> 
+                            <img src="https://api.bombaytaxico.com/uploads/assets/emailer.png" style="width: 100%;"/> 
                           </div>
                         </td>
                       </tr>

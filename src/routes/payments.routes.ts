@@ -163,6 +163,7 @@ router.post("/success", async (req, res) => {
             gender: booking.gender,
             emailId: booking.emailId,
             contactNumber: booking.contactNumber,
+            whatsAppNumber: booking.whatsAppNumber,
             pincode: booking.pincode,
             address: booking.address,
             requested_taxi_type: booking.requested_taxi_type,

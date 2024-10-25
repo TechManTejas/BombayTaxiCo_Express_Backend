@@ -60,8 +60,6 @@ const startBookingSMSCron = () => {
         return false;
       });
 
-      console.log(filteredBookingsToday);
-
       // Log information for each booking
       filteredBookingsToday.forEach(async (booking) => {
         const user: IUser | null = booking.user_id as unknown as IUser;

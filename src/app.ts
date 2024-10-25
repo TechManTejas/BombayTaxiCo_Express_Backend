@@ -27,6 +27,7 @@ import pricesRoutes from './routes/prices.routes';
 import invoiceRoutes from './routes/invoices.routes';
 import emailRoutes from './routes/emails.routes'
 import startBookingSMSCron from './crons/booking_sms';
+import { endTripSMSCron, startTripSMSCron } from './crons/start_end_trip';
 
 
 const app = express();
@@ -92,6 +93,9 @@ const server = https.createServer(credentials, app);
 // const server = http.createServer(app);
 
 startBookingSMSCron()
+startTripSMSCron()
+endTripSMSCron()
+
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT} with SSL`);

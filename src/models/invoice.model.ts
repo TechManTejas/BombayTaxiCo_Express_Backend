@@ -18,6 +18,8 @@ const invoiceSchema = new Schema<IInvoice>({
   amount: { type: Number, required: true },
   cashPaid: { type: Number, required: true, default: 0 },
   amountDue: { type: Number, required: true, default: 0 },
+}, {
+  timestamps: true
 });
 
 // Create and export the Invoice model

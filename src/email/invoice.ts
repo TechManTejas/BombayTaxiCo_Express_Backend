@@ -145,7 +145,7 @@ const invoice = () => {
       <div
         style="margin: 0 auto;min-width: 320px;max-width: 600px;overflow-wrap: break-word;word-wrap: break-word;word-break: break-word;background-color: transparent;">
         <div style="width: 100%; padding-top: 20px; display: flex; justify-content: center;">
-            <img src="https://43.204.227.16:5000/uploads/assets/logo.jpg" style="width: 60%; "/>
+            <img src="https://api.bombaytaxico.com/uploads/assets/logo.jpg" style="width: 60%; "/>
         </div>
         <div style="background-color: transparent">
           <div class="u-row"
@@ -255,7 +255,7 @@ const invoice = () => {
     
                                   <div class="menu" style="text-align:center">
                                    
-                                    <a href="https://www.bombaytaxicompany.com/" target="_self"
+                                    <a href="https://www.bombaytaxico.com/" target="_self"
                                       style="padding:5px 15px;display:inline-block;color:#000000;font-size:14px;text-decoration:none"
                                       class="v-padding">
                                       Home
@@ -266,7 +266,7 @@ const invoice = () => {
                                       |
                                     </span>
     
-                                    <a href="https://www.bombaytaxicompany.com/about" target="_self"
+                                    <a href="https://www.bombaytaxico.com/about" target="_self"
                                       style="padding:5px 15px;display:inline-block;color:#000000;font-size:14px;text-decoration:none"
                                       class="v-padding">
                                       About Us
@@ -277,7 +277,7 @@ const invoice = () => {
                                       |
                                     </span>
     
-                                    <a href="https://www.bombaytaxicompany.com/contact" target="_self"
+                                    <a href="https://www.bombaytaxico.com/contact" target="_self"
                                       style="padding:5px 15px;display:inline-block;color:#000000;font-size:14px;text-decoration:none"
                                       class="v-padding">
                                       Contact US
@@ -299,8 +299,8 @@ const invoice = () => {
                             <div class="v-text-align"
                               style="font-size: 14px; line-height: 160%; text-align: center; word-wrap: break-word;">
                               <p style="font-size: 14px; line-height: 160%;">you have received this email as a
-                                registered user of <a rel="noopener" href="https://bombaytaxicompany.com"
-                                  target="_blank">bombaytaxicompany.com</a></p>
+                                registered user of <a rel="noopener" href="https://bombaytaxico.com"
+                                  target="_blank">bombaytaxico.com</a></p>
        
                               <p style="font-size: 14px; line-height: 160%;"> </p>
                               <p style="font-size: 14px; line-height: 160%;">Shop no. 1

@@ -33,7 +33,7 @@ const sendOTPEmail = async (email: string, otp: string): Promise<void> => {
 const sendOTPSMS = async (mobile: string, otp: string): Promise<void> => {
   await client.messages.create({
     body: `Your verification code is: ${otp}`,
-    from: "+12563464791",
+    from: "+12183003986",
     to: mobile,
   });
 };

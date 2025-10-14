@@ -450,14 +450,12 @@ export const reassignTaxiDriver = async (req: Request, res: Response) => {
         driver: updatedBooking?.driver_id,
       };
 
-      console.log(bookingDetails)
-
       // Send Email
-      await sendEmail({
-        to: updatedBooking?.user_id?.email_id,
-        subject: "Your New Ride Details",
-        message: reassign(bookingDetails),
-      });
+      // await sendEmail({
+      //   to: updatedBooking?.user_id?.email_id,
+      //   subject: "Your New Ride Details",
+      //   message: reassign(bookingDetails),
+      // });
 
       // Send success response
       res

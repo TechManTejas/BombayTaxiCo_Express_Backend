@@ -217,7 +217,7 @@ const confirmationEmail = (bookingDetails: any) => {
                             <p style="line-height: 120%; font-size: 14px;">
                               <span
                                 style="font-family: 'Open Sans', sans-serif; font-size: 16px; line-height: 30px;">
-                                Pickup Date: <span style="font-weight: bold;">${bookingDetails.pick_up_date}</span>
+                                Pickup Date: <span style="font-weight: bold;">${bookingDetails.pick_up_date.toDateString().slice(4)}</span>
                               </span>
                             </p>
                             <p style="line-height: 120%; font-size: 14px;">
@@ -229,7 +229,7 @@ const confirmationEmail = (bookingDetails: any) => {
                             <p style="line-height: 120%; font-size: 14px;">
                               <span
                                 style="font-family: 'Open Sans', sans-serif; font-size: 16px; line-height: 30px;">
-                                Return Date: <span style="font-weight: bold;">${bookingDetails.return_date}</span>
+                                Return Date: <span style="font-weight: bold;">${bookingDetails.return_date.toDateString().slice(4)}</span>
                               </span>
                             </p>
                             <!-- <p style="line-height: 140%; font-size: 14px;">

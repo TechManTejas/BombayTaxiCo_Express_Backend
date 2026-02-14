@@ -6,9 +6,11 @@
  * Validates an email address format
  */
 export const isValidEmail = (email: string | null | undefined): boolean => {
-  if (!email) return false;
+  if (email === null || email === undefined) return false;
+  const str = String(email).trim();
+  if (!str) return false;
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return regex.test(email.trim());
+  return regex.test(str);
 };
 
 /**
@@ -69,6 +71,7 @@ export const sanitizeString = (input: string | null | undefined): string => {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#x27;')
     .trim();
 };
 

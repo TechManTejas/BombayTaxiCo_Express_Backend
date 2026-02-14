@@ -141,6 +141,18 @@ bookingSchema.pre<IBooking>('save', async function (next) {
   next();
 });
 
+// Helper to check if a status string is a valid BookingStatus
+export const isValidBookingStatus = (status: string | null | undefined): boolean => {
+  if (!status) return false;
+  return Object.values(BookingStatus).includes(status as BookingStatus);
+};
+
+// Helper to check if a trip type string is valid
+export const isValidTripType = (tripType: string | null | undefined): boolean => {
+  if (!tripType) return false;
+  return Object.values(TripType).includes(tripType as TripType);
+};
+
 // Create and export the Booking model
 const Booking = model<IBooking>('Booking', bookingSchema);
 export default Booking;

@@ -26,8 +26,8 @@ export const formatINR = (amount: number | null | undefined): string => {
 /**
  * Formats a date for API response
  */
-export const formatDate = (date: Date | string | null | undefined): string => {
-  if (!date) return '';
+export const formatDate = (date: Date | string | number | null | undefined): string => {
+  if (date === null || date === undefined) return '';
   const d = date instanceof Date ? date : new Date(date);
   if (isNaN(d.getTime())) return '';
   return d.toISOString().split('T')[0];
@@ -55,10 +55,13 @@ export const truncateString = (str: string | null | undefined, maxLen: number): 
  * Capitalizes the first letter of each word
  */
 export const titleCase = (str: string | null | undefined): string => {
-  if (!str) return '';
-  return String(str)
+  if (str === null || str === undefined) return '';
+  const s = String(str).trim();
+  if (!s) return '';
+  return s
     .toLowerCase()
     .split(' ')
+    .filter(word => word.length > 0)
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 };

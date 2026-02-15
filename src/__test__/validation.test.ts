@@ -171,7 +171,7 @@ describe('Validation Utilities', () => {
       const bookingData = {
         pickupLocation: '19.0760,72.8777 Mumbai, Maharashtra',
         dropoffLocation: '28.6139,77.2090 Delhi, NCR',
-        scheduledTime: '2025-12-25T10:30:00.000Z',
+        scheduledTime: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
         vehicleType: 'sedan',
         estimatedDistance: 150.5,
         estimatedDuration: 120,

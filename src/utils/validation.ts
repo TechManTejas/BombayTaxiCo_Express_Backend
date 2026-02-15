@@ -195,7 +195,7 @@ export const validateBookingData = (data: any): ValidationResult => {
       type: 'string',
       custom: (value: string) => {
         const date = new Date(value);
-        return !isNaN(date.getTime()) && date > new Date() || 'Scheduled time must be a valid future date';
+        return (!isNaN(date.getTime()) && date > new Date()) || 'Scheduled time must be a valid future date';
       }
     },
     {

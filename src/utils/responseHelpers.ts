@@ -66,15 +66,17 @@ export const paginatedResponse = <T>(
   page: number,
   pageSize: number
 ): ApiResponse<{ items: T[]; total: number; page: number; pageSize: number; totalPages: number }> => {
-  const totalPages = Math.ceil(total / (pageSize || 1));
+  const safeTotal = total > 0 ? total : 0;
+  const safePageSize = pageSize > 0 ? pageSize : 10;
+  const totalPages = Math.max(0, Math.ceil(safeTotal / safePageSize));
   return {
     success: true,
     message: 'Success',
     data: {
       items: items || [],
-      total: total || 0,
-      page: page || 1,
-      pageSize: pageSize || 10,
+      total: safeTotal,
+      page: page > 0 ? page : 1,
+      pageSize: safePageSize,
       totalPages,
     },
   };

@@ -17,7 +17,7 @@ describe('Formatters Utility Tests', () => {
 
   describe('truncateString', () => {
     it('should truncate long string', () => {
-      expect(truncateString('Hello World', 5)).toBe('Hello...');
+      expect(truncateString('Hello World', 8)).toBe('Hello...');
     });
 
     it('should return short string unchanged', () => {

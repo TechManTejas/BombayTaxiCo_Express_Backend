@@ -18,7 +18,10 @@ export const isValidEmail = (email: string | null | undefined): boolean => {
  */
 export const isValidPhone = (phone: string | null | undefined): boolean => {
   if (!phone) return false;
-  const cleaned = String(phone).replace(/\D/g, '');
+  let cleaned = String(phone).replace(/\D/g, '');
+  if (cleaned.startsWith('91') && cleaned.length === 12) {
+    cleaned = cleaned.slice(2);
+  }
   return /^[6-9]\d{9}$/.test(cleaned);
 };
 
@@ -37,8 +40,8 @@ export const validatePagination = (
   page: string | number | null | undefined,
   pageSize: string | number | null | undefined
 ): { page: number; pageSize: number; skip: number } => {
-  let p = typeof page === 'string' ? parseInt(page, 10) : (page || 1);
-  let ps = typeof pageSize === 'string' ? parseInt(pageSize, 10) : (pageSize || 10);
+  let p = typeof page === 'string' ? parseInt(page, 10) : (typeof page === 'number' ? page : 1);
+  let ps = typeof pageSize === 'string' ? parseInt(pageSize, 10) : (typeof pageSize === 'number' ? pageSize : 10);
 
   if (isNaN(p) || p < 1) p = 1;
   if (isNaN(ps) || ps < 1) ps = 10;

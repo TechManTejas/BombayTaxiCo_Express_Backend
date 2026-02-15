@@ -48,7 +48,9 @@ export const truncateString = (str: string | null | undefined, maxLen: number): 
   if (str === null || str === undefined) return '';
   const s = String(str);
   if (maxLen <= 0) return '';
-  return s.length > maxLen ? s.substring(0, maxLen) + '...' : s;
+  if (s.length <= maxLen) return s;
+  if (maxLen <= 3) return s.substring(0, maxLen);
+  return s.substring(0, maxLen - 3) + '...';
 };
 
 /**
@@ -71,5 +73,6 @@ export const titleCase = (str: string | null | undefined): string => {
  */
 export const formatDistance = (km: number | null | undefined): string => {
   if (km === null || km === undefined || isNaN(km)) return '0 km';
+  if (km < 0) return '0 km';
   return `${km.toFixed(1)} km`;
 };

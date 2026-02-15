@@ -101,7 +101,7 @@ describe('formatBookingNumber', () => {
 
 describe('truncateString', () => {
   test('truncates long string', () => {
-    expect(truncateString('Hello World', 5)).toBe('Hello...');
+    expect(truncateString('Hello World', 8)).toBe('Hello...');
   });
 
   test('returns short string unchanged', () => {

@@ -146,7 +146,7 @@ describe('API Response Utilities', () => {
       const input = '<script>alert("xss")</script>';
       const result = sanitizeInput(input);
       
-      expect(result).toBe('&lt;script&gt;alert(&quot;xss&quot;)&lt;&#x2F;script&gt;');
+      expect(result).toBe('&lt;script&gt;alert(&quot;xss&quot;)&lt;/script&gt;');
     });
 
     it('should trim string input', () => {

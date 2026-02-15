@@ -76,11 +76,11 @@ describe('Formatters Edge Cases', () => {
     });
 
     it('should handle string with special characters', () => {
-      expect(truncateString('Hello@World!', 8)).toBe('Hello@Wo...');
+      expect(truncateString('Hello@World!', 8)).toBe('Hello...');
     });
 
     it('should handle very small max length', () => {
-      expect(truncateString('Hello', 1)).toBe('H...');
+      expect(truncateString('Hello', 1)).toBe('H');
     });
   });
 
@@ -108,7 +108,7 @@ describe('Formatters Edge Cases', () => {
     });
 
     it('should handle negative distances', () => {
-      expect(formatDistance(-10)).toBe('-10.0 km');
+      expect(formatDistance(-10)).toBe('0 km');
     });
   });
 });

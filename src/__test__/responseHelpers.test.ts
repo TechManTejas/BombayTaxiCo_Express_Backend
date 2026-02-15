@@ -117,7 +117,8 @@ describe('paginatedResponse', () => {
 
   test('handles zero pageSize without division by zero', () => {
     const res = paginatedResponse([], 10, 1, 0);
-    expect(res.data!.totalPages).toBe(10);
+    expect(res.data!.pageSize).toBe(10);
+    expect(res.data!.totalPages).toBe(1);
   });
 });
 

@@ -33,14 +33,17 @@ jest.mock('fs', () => ({
 // Mock path for testing
 jest.mock('path', () => ({
   extname: jest.fn((filename: string) => {
-    const ext = filename.split('.').pop();
-    return ext ? `.${ext}` : '';
+    const dotIndex = filename.lastIndexOf('.');
+    if (dotIndex <= 0) return '';
+    return filename.substring(dotIndex);
   }),
   basename: jest.fn((filename: string, ext?: string) => {
-    if (ext) {
-      return filename.replace(ext, '');
+    if (ext && filename.endsWith(ext)) {
+      return filename.slice(0, -ext.length);
     }
-    return filename.split('.').slice(0, -1).join('.');
+    const dotIndex = filename.lastIndexOf('.');
+    if (dotIndex <= 0) return filename;
+    return filename.substring(0, dotIndex);
   }),
   join: jest.fn((...paths: string[]) => paths.join('/'))
 }));
@@ -51,6 +54,21 @@ describe('File Upload Utilities', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    // Re-apply path mock implementations since mockReturnValue overrides persist after clearAllMocks
+    mockPath.extname.mockImplementation((filename: string) => {
+      const dotIndex = filename.lastIndexOf('.');
+      if (dotIndex <= 0) return '';
+      return filename.substring(dotIndex);
+    });
+    mockPath.basename.mockImplementation((filename: string, ext?: string) => {
+      if (ext && filename.endsWith(ext)) {
+        return filename.slice(0, -ext.length);
+      }
+      const dotIndex = filename.lastIndexOf('.');
+      if (dotIndex <= 0) return filename;
+      return filename.substring(0, dotIndex);
+    });
+    mockPath.join.mockImplementation((...paths: string[]) => paths.join('/'));
   });
 
   describe('validateUploadedFile', () => {
@@ -69,8 +87,10 @@ describe('File Upload Utilities', () => {
         size: 500 * 1024, // 500KB
         destination: '/uploads',
         filename: 'test.jpg',
-        path: '/uploads/test.jpg'
-      };
+        path: '/uploads/test.jpg',
+        stream: null as any,
+        buffer: null as any
+      } as Express.Multer.File;
 
       const result = validateUploadedFile(file, validation);
       
@@ -87,8 +107,10 @@ describe('File Upload Utilities', () => {
         size: 2 * 1024 * 1024, // 2MB
         destination: '/uploads',
         filename: 'large.jpg',
-        path: '/uploads/large.jpg'
-      };
+        path: '/uploads/large.jpg',
+        stream: null as any,
+        buffer: null as any
+      } as Express.Multer.File;
 
       const result = validateUploadedFile(file, validation);
       
@@ -105,8 +127,10 @@ describe('File Upload Utilities', () => {
         size: 500 * 1024,
         destination: '/uploads',
         filename: 'test.txt',
-        path: '/uploads/test.txt'
-      };
+        path: '/uploads/test.txt',
+        stream: null as any,
+        buffer: null as any
+      } as Express.Multer.File;
 
       const result = validateUploadedFile(file, validation);
       
@@ -115,7 +139,7 @@ describe('File Upload Utilities', () => {
     });
 
     it('should reject file with invalid extension', () => {
-      mockPath.extname.mockReturnValue('.txt');
+      mockPath.extname.mockReturnValueOnce('.txt');
       
       const file = {
         fieldname: 'image',
@@ -125,8 +149,10 @@ describe('File Upload Utilities', () => {
         size: 500 * 1024,
         destination: '/uploads',
         filename: 'test.txt',
-        path: '/uploads/test.txt'
-      };
+        path: '/uploads/test.txt',
+        stream: null as any,
+        buffer: null as any
+      } as Express.Multer.File;
 
       const result = validateUploadedFile(file, validation);
       
@@ -353,7 +379,8 @@ describe('File Upload Utilities', () => {
       
       mockFs.existsSync.mockReturnValue(true);
       mockFs.readdirSync.mockReturnValue(['old.jpg', 'recent.jpg']);
-      mockFs.statSync.mockImplementation((filePath) => ({
+      mockFs.unlinkSync.mockImplementation(() => {});
+      mockFs.statSync.mockImplementation((filePath: string) => ({
         size: 1024,
         isFile: () => true,
         isDirectory: () => false,
@@ -390,7 +417,7 @@ describe('File Upload Utilities', () => {
     it('should calculate directory size', () => {
       mockFs.existsSync.mockReturnValue(true);
       mockFs.readdirSync.mockReturnValue(['file1.jpg', 'file2.jpg']);
-      mockFs.statSync.mockImplementation((filePath) => ({
+      mockFs.statSync.mockImplementation((filePath: string) => ({
         size: 1024,
         isFile: () => true,
         isDirectory: () => false,
@@ -412,7 +439,7 @@ describe('File Upload Utilities', () => {
 
     it('should handle nested directories', () => {
       mockFs.existsSync.mockReturnValue(true);
-      mockFs.readdirSync.mockImplementation((dirPath) => {
+      mockFs.readdirSync.mockImplementation((dirPath: string) => {
         if (dirPath === '/uploads') {
           return ['file1.jpg', 'subdir'];
         } else if (dirPath === '/uploads/subdir') {
@@ -420,7 +447,7 @@ describe('File Upload Utilities', () => {
         }
         return [];
       });
-      mockFs.statSync.mockImplementation((filePath) => {
+      mockFs.statSync.mockImplementation((filePath: string) => {
         if (filePath.includes('file')) {
           return {
             size: 1024,

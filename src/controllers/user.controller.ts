@@ -86,9 +86,6 @@ export const registerOrSignInUser = async (
 };
 
 export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
-
-  console.log(otpStore)
-
   const { otp } = req.body;
 
   // Remove expired OTPs before verification
@@ -186,10 +183,7 @@ export const registerUser = async (
   res: Response
 ): Promise<void> => {
   try {
-    // Extract user details from the request body
     const { mobile_no, email_id, name } = req.body;
-
-    console.log(req.body);
 
     // Create a new user instance
     const newUser = new User({
@@ -274,9 +268,6 @@ export const getUserDetails = async (
       res.status(404).json({ message: "User not found" });
       return;
     }
-
-    // Print the user's name (you can replace this with any desired action)
-    console.log("User Name:", user.name);
 
     // Send a success response
     res.status(200).json({ message: "User details retrieved successfully" });

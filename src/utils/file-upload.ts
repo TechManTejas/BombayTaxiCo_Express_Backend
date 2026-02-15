@@ -134,6 +134,7 @@ export const getFileInfo = (filePath: string): { size: number; mimeType: string;
  * Gets MIME type from file extension
  */
 export const getMimeTypeFromExtension = (ext: string): string => {
+  const normalizedExt = ext.toLowerCase();
   const mimeTypes: Record<string, string> = {
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
@@ -159,7 +160,7 @@ export const getMimeTypeFromExtension = (ext: string): string => {
     '.wav': 'audio/wav'
   };
   
-  return mimeTypes[ext] || 'application/octet-stream';
+  return mimeTypes[normalizedExt] || 'application/octet-stream';
 };
 
 /**

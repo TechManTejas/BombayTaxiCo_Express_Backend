@@ -7,6 +7,17 @@ import https from "https"
 import http from "http";
 import bodyParser from 'body-parser';
 
+// Enhanced error handling for production
+process.on('uncaughtException', (error) => {
+  console.error('Uncaught Exception:', error);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+  process.exit(1);
+});
+
 // Routes 
 import searchRoutes from './routes/search.routes';
 import userRoutes from './routes/userRoutes.routes';
@@ -80,17 +91,17 @@ app.get('/.well-known/pki-validation/2DC175DFC7B30A058467A803ADCCFD76.txt', (req
 });
 
 // Specify the paths to your SSL certificate and private key
-const privateKey = fs.readFileSync('/etc/letsencrypt/live/api.bombaytaxico.com/privkey.pem', 'utf8');
-const certificate = fs.readFileSync('/etc/letsencrypt/live/api.bombaytaxico.com/fullchain.pem', 'utf8');
+// const privateKey = fs.readFileSync('/etc/letsencrypt/live/api.bombaytaxico.com/privkey.pem', 'utf8');
+// const certificate = fs.readFileSync('/etc/letsencrypt/live/api.bombaytaxico.com/fullchain.pem', 'utf8');
 // const ca = fs.readFileSync('ca_bundle.crt', 'utf8');
 
-const credentials = { key: privateKey, cert: certificate };
+// const credentials = { key: privateKey, cert: certificate };
 
 // Create an HTTPS server
-const server = https.createServer(credentials, app);
+// const server = https.createServer(credentials, app);
 
 // Create an HTTP server
-// const server = http.createServer(app);
+const server = http.createServer(app);
 
 startBookingSMSCron()
 startTripSMSCron()

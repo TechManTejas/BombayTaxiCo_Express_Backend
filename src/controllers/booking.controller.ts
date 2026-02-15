@@ -307,8 +307,6 @@ export const assignTaxiDriver = async (req: Request, res: Response) => {
 export const reassignTaxiDriver = async (req: Request, res: Response) => {
   const { booking_id, driver_id, taxi_id } = req.body;
 
-  console.log(req.body);
-
   try {
     // Start a transaction
     const session = await Booking.startSession();

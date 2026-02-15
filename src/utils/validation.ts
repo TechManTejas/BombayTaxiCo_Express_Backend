@@ -32,6 +32,8 @@ export const validateData = (data: any, rules: ValidationRule[]): ValidationResu
     // Check if required field is missing
     if (rule.required && (value === undefined || value === null || value === '')) {
       fieldErrors.push(`${rule.field} is required`);
+      errors[rule.field] = fieldErrors;
+      continue;
     }
     
     // Skip other validations if field is not required and empty

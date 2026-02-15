@@ -12,6 +12,10 @@ export const formatPhone = (phone: string | null | undefined): string => {
   if (cleaned.length === 10) {
     return `+91 ${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
   }
+  if (cleaned.length === 12 && cleaned.startsWith('91')) {
+    const number = cleaned.slice(2);
+    return `+91 ${number.slice(0, 5)}-${number.slice(5)}`;
+  }
   return str;
 };
 

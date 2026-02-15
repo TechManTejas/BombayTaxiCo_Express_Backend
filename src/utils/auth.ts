@@ -88,6 +88,9 @@ export const comparePassword = async (password: string, hash: string): Promise<b
  * Validates password strength
  */
 export const validatePasswordStrength = (password: string): { isValid: boolean; errors: string[] } => {
+  if (!password) {
+    return { isValid: false, errors: ['Password is required'] };
+  }
   const errors: string[] = [];
   
   if (password.length < 8) {
@@ -126,12 +129,13 @@ export const validatePasswordStrength = (password: string): { isValid: boolean; 
 export const extractTokenFromHeader = (authHeader: string | undefined): string | null => {
   if (!authHeader) return null;
   
-  const parts = authHeader.split(' ');
+  const trimmed = authHeader.trim();
+  const parts = trimmed.split(' ');
   if (parts.length !== 2 || parts[0] !== 'Bearer') {
     return null;
   }
   
-  return parts[1];
+  return parts[1].trim();
 };
 
 /**

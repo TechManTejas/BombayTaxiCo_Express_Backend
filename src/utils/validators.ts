@@ -71,6 +71,7 @@ export const validateRequiredFields = (
 export const sanitizeString = (input: string | null | undefined): string => {
   if (input === null || input === undefined) return '';
   return String(input)
+    .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')

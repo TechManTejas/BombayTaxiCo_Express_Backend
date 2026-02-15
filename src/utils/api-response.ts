@@ -213,6 +213,15 @@ export class ApiCache {
   }
   
   size(): number {
-    return this.cache.size;
+    const now = Date.now();
+    let count = 0;
+    for (const [key, item] of this.cache) {
+      if (now <= item.expiry) {
+        count++;
+      } else {
+        this.cache.delete(key);
+      }
+    }
+    return count;
   }
 }

@@ -2,7 +2,6 @@
  * File upload and media processing utilities
  */
 
-import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 
@@ -203,46 +202,30 @@ export const isAudioFile = (mimeType: string): boolean => {
 };
 
 /**
- * Creates multer storage configuration
- */
-export const createMulterStorage = (destination: string): multer.StorageEngine => {
-  ensureUploadDirectory(destination);
-  
-  return multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, destination);
-    },
-    filename: (req, file, cb) => {
-      const uniqueName = generateUniqueFilename(file.originalname);
-      cb(null, uniqueName);
-    }
-  });
-};
-
-/**
- * Creates multer file filter
+ * Creates file filter for validation
  */
 export const createFileFilter = (fileValidation: FileValidation) => {
-  return (req: any, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  return (req: any, file: Express.Multer.File, cb: any) => {
     const validationResult = validateUploadedFile(file, fileValidation);
     
     if (validationResult.isValid) {
       cb(null, true);
     } else {
-      cb(new Error(validationResult.errors.join(', ')));
+      cb(new Error(validationResult.errors.join(', ')), false);
     }
   };
 };
 
 /**
- * Creates complete multer configuration
+ * Creates upload configuration
  */
-export const createMulterConfig = (
+export const createUploadConfig = (
   destination: string,
   validation: FileValidation
-): multer.Options => {
+) => {
   return {
-    storage: createMulterStorage(destination),
+    destination,
+    validation,
     fileFilter: createFileFilter(validation),
     limits: {
       fileSize: validation.maxSize,

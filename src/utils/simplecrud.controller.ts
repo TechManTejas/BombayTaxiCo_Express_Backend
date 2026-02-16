@@ -12,7 +12,7 @@ interface UploadOptions {
   fields: Record<string, UploadFieldOptions>;
 }
 
-export type ProcessFieldCallback = (documentData: Record<string, any>) => void;
+export type ProcessFieldCallback = (documentData: Record<string, any>) => Record<string, any> | void;
 
 // Generic function to generate CRUD routes for a model
 export const generateCRUDRoutes = <T extends Document>(
@@ -56,7 +56,10 @@ export const generateCRUDRoutes = <T extends Document>(
       }
 
       if (processFieldCallback) {
-        documentData = processFieldCallback(documentData);
+        const result = processFieldCallback(documentData);
+        if (result !== undefined) {
+          documentData = result;
+        }
       }
 
       const newItem = new model(documentData);
@@ -161,7 +164,10 @@ export const generateCRUDRoutes = <T extends Document>(
       }
 
       if (processFieldCallback) {
-        documentData = processFieldCallback(documentData);
+        const result = processFieldCallback(documentData);
+        if (result !== undefined) {
+          documentData = result;
+        }
       }
 
       const updatedItem = await model.findByIdAndUpdate(req.params.id, documentData, { new: true });

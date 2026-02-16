@@ -7,8 +7,8 @@
  */
 export const formatPhone = (phone: string | null | undefined): string => {
   if (phone === null || phone === undefined) return '';
-  const str = String(phone);
-  const cleaned = str.replace(/\D/g, '');
+  const phoneStr = String(phone);
+  const cleaned = phoneStr.replace(/\D/g, '');
   if (cleaned.length === 10) {
     return `+91 ${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
   }
@@ -16,7 +16,7 @@ export const formatPhone = (phone: string | null | undefined): string => {
     const number = cleaned.slice(2);
     return `+91 ${number.slice(0, 5)}-${number.slice(5)}`;
   }
-  return str;
+  return phoneStr;
 };
 
 /**

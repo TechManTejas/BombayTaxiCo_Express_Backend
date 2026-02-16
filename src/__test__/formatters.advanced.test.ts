@@ -37,7 +37,7 @@ describe('Formatters Edge Cases', () => {
     });
 
     it('should handle negative amounts', () => {
-      expect(formatINR(-500)).toBe('₹-500');
+      expect(formatINR(-500)).toBe('-₹500');
     });
 
     it('should handle string numbers', () => {

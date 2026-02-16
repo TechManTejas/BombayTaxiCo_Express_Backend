@@ -51,11 +51,11 @@ export const validateData = (data: any, rules: ValidationRule[]): ValidationResu
     
     // String validations
     if (typeof value === 'string') {
-      if (rule.minLength && value.length < rule.minLength) {
+      if (rule.minLength !== undefined && value.length < rule.minLength) {
         fieldErrors.push(`${rule.field} must be at least ${rule.minLength} characters long`);
       }
       
-      if (rule.maxLength && value.length > rule.maxLength) {
+      if (rule.maxLength !== undefined && rule.maxLength > 0 && value.length > rule.maxLength) {
         fieldErrors.push(`${rule.field} must not exceed ${rule.maxLength} characters`);
       }
       

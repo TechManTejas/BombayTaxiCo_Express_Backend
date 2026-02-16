@@ -128,6 +128,7 @@ export const validateRequestData = (
 export const sanitizeInput = (input: any): any => {
   if (typeof input === 'string') {
     return input
+      .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
@@ -191,6 +192,7 @@ export class ApiCache {
   private cache: Map<string, { data: any; expiry: number }> = new Map();
   
   set(key: string, data: any, ttlMs: number): void {
+    if (!ttlMs || ttlMs <= 0 || isNaN(ttlMs)) return;
     this.cache.set(key, {
       data,
       expiry: Date.now() + ttlMs

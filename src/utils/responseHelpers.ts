@@ -54,7 +54,7 @@ export const validationErrorResponse = (missingFields: string[]): ApiResponse =>
  * Creates a not found response
  */
 export const notFoundResponse = (resource: string | null | undefined): ApiResponse => {
-  const name = resource || 'Resource';
+  const name = (resource && typeof resource === 'string' ? resource.trim() : '') || 'Resource';
   return {
     success: false,
     message: `${name} not found`,

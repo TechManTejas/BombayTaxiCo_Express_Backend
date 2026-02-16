@@ -5,13 +5,16 @@ import jwt from 'jsonwebtoken';
 // Middleware for token authentication
 export const authenticateToken = (req: Request, res: Response, next: NextFunction): void => {
   // Extract the token from the request headers
-  const token = req.header('Authorization');
+  const authHeader = req.header('Authorization');
 
   // Check if the token is present
-  if (!token) {
+  if (!authHeader) {
     res.status(401).json({ message: 'Unauthorized - Token not provided' });
     return;
   }
+
+  // Strip Bearer prefix if present
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : authHeader;
 
   // Verify the token
   jwt.verify(token, process.env.JWT_SECRET_KEY || 'your-secret-key', (err, decoded) => {

@@ -168,6 +168,7 @@ export const getMimeTypeFromExtension = (ext: string): string => {
  * Checks if file is an image
  */
 export const isImageFile = (mimeType: string): boolean => {
+  if (!mimeType) return false;
   return mimeType.startsWith('image/');
 };
 
@@ -175,6 +176,7 @@ export const isImageFile = (mimeType: string): boolean => {
  * Checks if file is a document
  */
 export const isDocumentFile = (mimeType: string): boolean => {
+  if (!mimeType) return false;
   const documentTypes = [
     'application/pdf',
     'application/msword',
@@ -194,6 +196,7 @@ export const isDocumentFile = (mimeType: string): boolean => {
  * Checks if file is a video
  */
 export const isVideoFile = (mimeType: string): boolean => {
+  if (!mimeType) return false;
   return mimeType.startsWith('video/');
 };
 
@@ -201,6 +204,7 @@ export const isVideoFile = (mimeType: string): boolean => {
  * Checks if file is an audio file
  */
 export const isAudioFile = (mimeType: string): boolean => {
+  if (!mimeType) return false;
   return mimeType.startsWith('audio/');
 };
 

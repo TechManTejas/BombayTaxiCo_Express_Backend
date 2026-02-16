@@ -108,6 +108,9 @@ export const validateRequestData = (
   data: any,
   requiredFields: string[]
 ): { isValid: boolean; missingFields: string[] } => {
+  if (!requiredFields || !Array.isArray(requiredFields) || requiredFields.length === 0) {
+    return { isValid: true, missingFields: [] };
+  }
   const missingFields: string[] = [];
   
   for (const field of requiredFields) {

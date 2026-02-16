@@ -79,6 +79,6 @@ export const titleCase = (str: string | null | undefined): string => {
  */
 export const formatDistance = (km: number | null | undefined): string => {
   if (km === null || km === undefined || isNaN(km)) return '0 km';
-  if (km < 0) return '0 km';
+  if (km < 0 || !isFinite(km)) return '0 km';
   return `${km.toFixed(1)} km`;
 };

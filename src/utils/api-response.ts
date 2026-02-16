@@ -63,19 +63,21 @@ export const createPaginatedResponse = <T>(
   total: number,
   message: string = 'Data retrieved successfully'
 ): PaginatedResponse<T> => {
-  const totalPages = Math.ceil(total / pageSize);
+  const safePageSize = pageSize > 0 ? pageSize : 10;
+  const safeTotal = total > 0 ? total : 0;
+  const totalPages = Math.ceil(safeTotal / safePageSize);
   
   return {
     success: true,
     message,
     data,
     pagination: {
-      page,
-      pageSize,
-      total,
+      page: page > 0 ? page : 1,
+      pageSize: safePageSize,
+      total: safeTotal,
       totalPages,
-      hasNext: page < totalPages,
-      hasPrev: page > 1
+      hasNext: (page > 0 ? page : 1) < totalPages,
+      hasPrev: (page > 0 ? page : 1) > 1
     },
     timestamp: new Date().toISOString()
   };
@@ -164,6 +166,9 @@ export class RateLimiter {
     
     // Remove old requests outside the window
     const validRequests = requests.filter(timestamp => now - timestamp < this.windowMs);
+    
+    // Always update the map with cleaned entries
+    this.requests.set(identifier, validRequests);
     
     if (validRequests.length >= this.maxRequests) {
       return false;

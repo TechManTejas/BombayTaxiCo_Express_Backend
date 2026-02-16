@@ -35,14 +35,18 @@ export const errorResponse = (message: string, errors?: string[]): ApiResponse =
  * Creates a validation error response
  */
 export const validationErrorResponse = (missingFields: string[]): ApiResponse => {
-  if (!missingFields || missingFields.length === 0) {
+  if (!missingFields || !Array.isArray(missingFields) || missingFields.length === 0) {
     return errorResponse('Validation failed');
   }
-  const fieldList = missingFields.join(', ');
+  const filtered = missingFields.filter(f => typeof f === 'string' && f.trim().length > 0);
+  if (filtered.length === 0) {
+    return errorResponse('Validation failed');
+  }
+  const fieldList = filtered.join(', ');
   return {
     success: false,
     message: `Missing required fields: ${fieldList}`,
-    errors: missingFields.map(f => `${f} is required`),
+    errors: filtered.map(f => `${f} is required`),
   };
 };
 

@@ -1,7 +1,7 @@
 // Import necessary libraries and modules
 import { Schema, model, Document } from 'mongoose';
 
-// Define the From schema
+// Define the City schema
 export interface ICity extends Document {
   name: string;
   status: 'Active' | 'Inactive';
@@ -19,6 +19,6 @@ const citySchema = new Schema<ICity>({
   },
 });
 
-// Create and export the From model
+// Create and export the City model
 const City = model<ICity>('City', citySchema);
 export default City;

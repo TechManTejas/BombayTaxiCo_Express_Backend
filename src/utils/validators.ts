@@ -33,7 +33,9 @@ export const isValidPhone = (phone: string | null | undefined): boolean => {
  */
 export const isValidObjectId = (id: string | null | undefined): boolean => {
   if (!id) return false;
-  return /^[0-9a-fA-F]{24}$/.test(id);
+  const trimmed = String(id).trim();
+  if (!trimmed) return false;
+  return /^[0-9a-fA-F]{24}$/.test(trimmed);
 };
 
 /**

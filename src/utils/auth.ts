@@ -87,9 +87,9 @@ export const comparePassword = async (password: string, hash: string): Promise<b
 /**
  * Validates password strength
  */
-export const validatePasswordStrength = (password: string): { isValid: boolean; errors: string[] } => {
-  if (!password) {
-    return { isValid: false, errors: ['Password is required'] };
+export const validatePasswordStrength = (password: any): { isValid: boolean; errors: string[] } => {
+  if (!password || typeof password !== 'string') {
+    return { isValid: false, errors: ['Password is required and must be a string'] };
   }
   const errors: string[] = [];
   

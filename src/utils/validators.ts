@@ -48,8 +48,8 @@ export const validatePagination = (
   let p = typeof page === 'string' ? parseInt(page, 10) : (typeof page === 'number' ? page : 1);
   let ps = typeof pageSize === 'string' ? parseInt(pageSize, 10) : (typeof pageSize === 'number' ? pageSize : 10);
 
-  if (isNaN(p) || p < 1) p = 1;
-  if (isNaN(ps) || ps < 1) ps = 10;
+  if (isNaN(p) || p < 1 || !isFinite(p)) p = 1;
+  if (isNaN(ps) || ps < 1 || !isFinite(ps)) ps = 10;
   if (ps > 100) ps = 100;
 
   return { page: p, pageSize: ps, skip: (p - 1) * ps };

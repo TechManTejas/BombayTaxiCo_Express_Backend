@@ -222,7 +222,9 @@ export const createPasswordResetToken = (): { token: string; expiry: Date } => {
  */
 export const validatePasswordResetToken = (token: string, expiry: Date): boolean => {
   if (!token || !expiry) return false;
-  return new Date() < expiry;
+  const expiryDate = expiry instanceof Date ? expiry : new Date(expiry);
+  if (isNaN(expiryDate.getTime())) return false;
+  return new Date() < expiryDate;
 };
 
 /**
@@ -269,6 +271,12 @@ export class AuthRateLimiter {
     // Check if currently locked out
     if (record.lockedUntil && now < record.lockedUntil) {
       return { blocked: true, remainingAttempts: 0 };
+    }
+    
+    // Clear expired lockout and reset count
+    if (record.lockedUntil && now >= record.lockedUntil) {
+      this.attempts.set(identifier, { count: 1, lastAttempt: now });
+      return { blocked: false, remainingAttempts: this.maxAttempts - 1 };
     }
     
     // Increment attempts

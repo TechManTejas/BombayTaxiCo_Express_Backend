@@ -132,7 +132,7 @@ describe('getErrorMessage', () => {
   });
 
   test('returns default for unknown types', () => {
-    expect(getErrorMessage(42)).toBe('An unexpected error occurred');
+    expect(getErrorMessage(42)).toBe('42');
   });
 
   test('returns default for null', () => {

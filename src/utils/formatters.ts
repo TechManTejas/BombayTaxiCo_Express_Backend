@@ -1,5 +1,5 @@
 /**
- * Data formatting helpers for API responses
+ *  Data formatting helpers for API responses
  */
 
 /**

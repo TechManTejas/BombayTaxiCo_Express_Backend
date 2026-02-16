@@ -134,7 +134,8 @@ export const getFileInfo = (filePath: string): { size: number; mimeType: string;
  * Gets MIME type from file extension
  */
 export const getMimeTypeFromExtension = (ext: string): string => {
-  const normalizedExt = ext.toLowerCase();
+  if (!ext) return 'application/octet-stream';
+  const normalizedExt = ext.startsWith('.') ? ext.toLowerCase() : `.${ext.toLowerCase()}`;
   const mimeTypes: Record<string, string> = {
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
@@ -339,6 +340,7 @@ export const createUploadErrorResponse = (error: Error, file?: Express.Multer.Fi
  */
 export const cleanupOldFiles = (directory: string, maxAge: number = 24 * 60 * 60 * 1000): number => {
   try {
+    if (!maxAge || maxAge <= 0 || isNaN(maxAge)) return 0;
     if (!fs.existsSync(directory)) {
       return 0;
     }

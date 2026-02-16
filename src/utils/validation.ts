@@ -77,11 +77,11 @@ export const validateData = (data: any, rules: ValidationRule[]): ValidationResu
     
     // Array validations
     if (Array.isArray(value)) {
-      if (rule.minLength && value.length < rule.minLength) {
+      if (rule.minLength !== undefined && value.length < rule.minLength) {
         fieldErrors.push(`${rule.field} must contain at least ${rule.minLength} items`);
       }
       
-      if (rule.maxLength && value.length > rule.maxLength) {
+      if (rule.maxLength !== undefined && rule.maxLength > 0 && value.length > rule.maxLength) {
         fieldErrors.push(`${rule.field} must not exceed ${rule.maxLength} items`);
       }
     }

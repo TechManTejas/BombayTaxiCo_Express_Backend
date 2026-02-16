@@ -43,7 +43,8 @@ export const formatDate = (date: Date | string | number | null | undefined): str
  */
 export const formatBookingNumber = (num: number | null | undefined): string => {
   if (num === null || num === undefined || isNaN(num)) return 'BTC-000000';
-  return `BTC-${String(num).padStart(6, '0')}`;
+  const safeNum = Math.abs(Math.floor(num));
+  return `BTC-${String(safeNum).padStart(6, '0')}`;
 };
 
 /**
@@ -52,7 +53,7 @@ export const formatBookingNumber = (num: number | null | undefined): string => {
 export const truncateString = (str: string | null | undefined, maxLen: number): string => {
   if (str === null || str === undefined) return '';
   const s = String(str);
-  if (maxLen <= 0) return '';
+  if (isNaN(maxLen) || maxLen <= 0) return '';
   if (s.length <= maxLen) return s;
   if (maxLen <= 3) return s.substring(0, maxLen);
   return s.substring(0, maxLen - 3) + '...';

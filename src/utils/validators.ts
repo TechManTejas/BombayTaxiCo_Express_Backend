@@ -19,7 +19,9 @@ export const isValidEmail = (email: string | null | undefined): boolean => {
  */
 export const isValidPhone = (phone: string | null | undefined): boolean => {
   if (!phone) return false;
-  let cleaned = String(phone).replace(/\D/g, '');
+  let str = String(phone).trim();
+  if (str.startsWith('+')) str = str.slice(1);
+  let cleaned = str.replace(/\D/g, '');
   if (cleaned.startsWith('91') && cleaned.length === 12) {
     cleaned = cleaned.slice(2);
   }

@@ -194,10 +194,12 @@ export const authorizeRoles = (...allowedRoles: string[]) => {
  * Generates secure random token
  */
 export const generateSecureToken = (length: number = 32): string => {
+  if (!length || length <= 0 || isNaN(length)) return '';
+  const safeLength = Math.min(Math.floor(length), 1024);
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
   
-  for (let i = 0; i < length; i++) {
+  for (let i = 0; i < safeLength; i++) {
     result += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   

@@ -9,6 +9,7 @@ export const isValidEmail = (email: string | null | undefined): boolean => {
   if (email === null || email === undefined) return false;
   const str = String(email).trim();
   if (!str) return false;
+  if (str.includes('..')) return false;
   const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return regex.test(str);
 };

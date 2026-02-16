@@ -1,4 +1,4 @@
-// Import necessary libraries and modules
+//  Import necessary libraries and modules
 import { Schema, model, Document } from 'mongoose';
 
 // Define the Coupon schema

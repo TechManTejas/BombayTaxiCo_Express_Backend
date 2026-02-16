@@ -63,8 +63,9 @@ export const createPaginatedResponse = <T>(
   total: number,
   message: string = 'Data retrieved successfully'
 ): PaginatedResponse<T> => {
-  const safePageSize = pageSize > 0 ? pageSize : 10;
-  const safeTotal = total > 0 ? total : 0;
+  const safePageSize = (typeof pageSize === 'number' && !isNaN(pageSize) && pageSize > 0) ? pageSize : 10;
+  const safeTotal = (typeof total === 'number' && !isNaN(total) && total > 0) ? total : 0;
+  const safePage = (typeof page === 'number' && !isNaN(page) && page > 0) ? page : 1;
   const totalPages = Math.ceil(safeTotal / safePageSize);
   
   return {
@@ -72,12 +73,12 @@ export const createPaginatedResponse = <T>(
     message,
     data,
     pagination: {
-      page: page > 0 ? page : 1,
+      page: safePage,
       pageSize: safePageSize,
       total: safeTotal,
       totalPages,
-      hasNext: (page > 0 ? page : 1) < totalPages,
-      hasPrev: (page > 0 ? page : 1) > 1
+      hasNext: safePage < totalPages,
+      hasPrev: safePage > 1
     },
     timestamp: new Date().toISOString()
   };

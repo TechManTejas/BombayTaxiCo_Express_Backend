@@ -23,7 +23,7 @@ export const formatPhone = (phone: string | null | undefined): string => {
  * Formats currency amount in INR
  */
 export const formatINR = (amount: number | null | undefined): string => {
-  if (amount === null || amount === undefined || isNaN(amount)) return '₹0';
+  if (amount === null || amount === undefined || isNaN(amount) || !isFinite(amount)) return '₹0';
   if (amount < 0) return `-₹${Math.abs(amount).toLocaleString('en-IN')}`;
   return `₹${amount.toLocaleString('en-IN')}`;
 };
@@ -68,7 +68,7 @@ export const titleCase = (str: string | null | undefined): string => {
   if (!s) return '';
   return s
     .toLowerCase()
-    .split(' ')
+    .split(/\s+/)
     .filter(word => word.length > 0)
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');

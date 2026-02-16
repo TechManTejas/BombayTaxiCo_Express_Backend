@@ -75,8 +75,9 @@ export const formatFileSize = (bytes: number): string => {
  * Generates unique filename
  */
 export const generateUniqueFilename = (originalname: string): string => {
-  const ext = path.extname(originalname);
-  const name = path.basename(originalname, ext);
+  const safeName = originalname || 'file';
+  const ext = path.extname(safeName);
+  const name = path.basename(safeName, ext) || 'file';
   const timestamp = Date.now();
   const random = Math.random().toString(36).substring(2);
   return `${name}_${timestamp}_${random}${ext}`;

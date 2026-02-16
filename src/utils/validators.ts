@@ -89,7 +89,9 @@ export const sanitizeString = (input: string | null | undefined): string => {
  */
 export const isValidDate = (dateStr: string | null | undefined): boolean => {
   if (!dateStr) return false;
-  const date = new Date(dateStr);
+  const trimmed = String(dateStr).trim();
+  if (!trimmed) return false;
+  const date = new Date(trimmed);
   return !isNaN(date.getTime());
 };
 
@@ -98,7 +100,9 @@ export const isValidDate = (dateStr: string | null | undefined): boolean => {
  */
 export const isFutureDate = (dateStr: string | null | undefined): boolean => {
   if (!dateStr) return false;
-  const date = new Date(dateStr);
+  const trimmed = String(dateStr).trim();
+  if (!trimmed) return false;
+  const date = new Date(trimmed);
   if (isNaN(date.getTime())) return false;
   return date > new Date();
 };

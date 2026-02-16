@@ -70,8 +70,9 @@ export const paginatedResponse = <T>(
   page: number,
   pageSize: number
 ): ApiResponse<{ items: T[]; total: number; page: number; pageSize: number; totalPages: number }> => {
-  const safeTotal = total > 0 ? total : 0;
-  const safePageSize = pageSize > 0 ? pageSize : 10;
+  const safeTotal = (typeof total === 'number' && !isNaN(total) && total > 0) ? total : 0;
+  const safePageSize = (typeof pageSize === 'number' && !isNaN(pageSize) && pageSize > 0) ? pageSize : 10;
+  const safePage = (typeof page === 'number' && !isNaN(page) && page > 0) ? page : 1;
   const totalPages = Math.max(0, Math.ceil(safeTotal / safePageSize));
   return {
     success: true,
@@ -79,7 +80,7 @@ export const paginatedResponse = <T>(
     data: {
       items: items || [],
       total: safeTotal,
-      page: page > 0 ? page : 1,
+      page: safePage,
       pageSize: safePageSize,
       totalPages,
     },

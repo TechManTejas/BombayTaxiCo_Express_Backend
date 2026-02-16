@@ -205,7 +205,7 @@ export const validateBookingData = (data: any): ValidationResult => {
       required: true,
       type: 'string',
       pattern: /^(sedan|suv|hatchback|luxury|bike)$/,
-      custom: (value: string) => ['sedan', 'suv', 'hatchback', 'luxury', 'bike'].includes(value) || 'Invalid vehicle type'
+      custom: (value: string) => ['sedan', 'suv', 'hatchback', 'luxury', 'bike'].includes(value.trim()) || 'Invalid vehicle type'
     }
   ];
   

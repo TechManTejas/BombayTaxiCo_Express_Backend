@@ -36,11 +36,23 @@ export const getUserBookings = async (req: Request, res: Response) => {
     const pageSize = req.query.pageSize
       ? parseInt(req.query.pageSize as string, 10)
       : 10;
-    const skip = (page - 1) * pageSize;
+    
+    // Validate pagination values
+    const safePage = (isNaN(page) || page < 1 || !isFinite(page)) ? 1 : page;
+    const safePageSize = (isNaN(pageSize) || pageSize < 1 || !isFinite(pageSize)) ? 10 : pageSize;
+    const skip = (safePage - 1) * safePageSize;
 
     // Filter (customize this based on your model's properties)
     const filterQuery: any = req.query.filter;
-    const filter = filterQuery ? JSON.parse(filterQuery) : {};
+    let filter = {};
+    if (filterQuery) {
+      try {
+        filter = JSON.parse(filterQuery);
+      } catch (e) {
+        console.warn('Invalid filter JSON:', filterQuery);
+        filter = {};
+      }
+    }
 
     // Search
     const searchQuery = req.query.search as string;
@@ -55,8 +67,10 @@ export const getUserBookings = async (req: Request, res: Response) => {
           return propertyType === "String";
         })
         .map((property) => {
+          // Escape special regex characters in search query
+          const escapedQuery = searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           const regexFilter = {
-            [property]: { $regex: new RegExp(searchQuery, "i") },
+            [property]: { $regex: new RegExp(escapedQuery, "i") },
           };
           return regexFilter;
         });
@@ -90,7 +104,7 @@ export const getUserBookings = async (req: Request, res: Response) => {
 
     const items = await itemsQuery
       .skip(skip)
-      .limit(pageSize)
+      .limit(safePageSize)
       .sort({ createdAt: -1 });
 
     res.status(200).json({ bookings: items, total: totalCount });

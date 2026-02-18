@@ -9,6 +9,21 @@ export interface ApiResponse<T = any> {
   error?: string;
   timestamp: string;
   statusCode?: number;
+  requestId?: string;
+  version?: string;
+}
+
+export interface ValidationError {
+  field: string;
+  message: string;
+  code: string;
+}
+
+export interface DetailedError {
+  code: string;
+  message: string;
+  details?: ValidationError[];
+  stack?: string;
 }
 
 export interface PaginationInfo {
@@ -30,13 +45,25 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
 export const createSuccessResponse = <T>(
   data: T,
   message: string = 'Operation completed successfully',
-  statusCode: number = 200
+  statusCode: number = 200,
+  options: { requestId?: string; version?: string } = {}
 ): ApiResponse<T> => {
+  // Validate inputs
+  if (typeof message !== 'string' || message.trim().length === 0) {
+    throw new Error('Message must be a non-empty string');
+  }
+  
+  if (typeof statusCode !== 'number' || statusCode < 200 || statusCode > 299) {
+    throw new Error('Success status code must be between 200 and 299');
+  }
+  
   return {
     success: true,
-    message,
+    message: message.trim(),
     data,
     statusCode,
+    requestId: options.requestId,
+    version: options.version || '1.0.0',
     timestamp: new Date().toISOString()
   };
 };
@@ -45,15 +72,41 @@ export const createSuccessResponse = <T>(
  * Creates a standardized error response
  */
 export const createErrorResponse = (
-  error: string,
+  error: string | DetailedError,
   message: string = 'Operation failed',
-  statusCode: number = 500
+  statusCode: number = 500,
+  options: { requestId?: string; version?: string; includeStack?: boolean } = {}
 ): ApiResponse => {
+  // Validate inputs
+  if (typeof message !== 'string' || message.trim().length === 0) {
+    throw new Error('Message must be a non-empty string');
+  }
+  
+  if (typeof statusCode !== 'number' || statusCode < 400 || statusCode > 599) {
+    throw new Error('Error status code must be between 400 and 599');
+  }
+  
+  let errorMessage: string;
+  let errorDetails: ValidationError[] | undefined;
+  
+  if (typeof error === 'string') {
+    errorMessage = error.trim();
+  } else {
+    errorMessage = error.message;
+    errorDetails = error.details;
+  }
+  
+  if (errorMessage.length === 0) {
+    errorMessage = 'Unknown error occurred';
+  }
+  
   return {
     success: false,
-    message,
-    error,
+    message: message.trim(),
+    error: errorMessage,
     statusCode,
+    requestId: options.requestId,
+    version: options.version || '1.0.0',
     timestamp: new Date().toISOString()
   };
 };
@@ -155,9 +208,18 @@ export const sanitizeInput = (input: any): any => {
   }
   
   if (typeof input === 'object' && input !== null) {
+    // Handle special object types that should pass through
+    if (input instanceof Date || input instanceof RegExp) {
+      return input;
+    }
+    
     const sanitized: any = {};
     for (const key in input) {
       if (input.hasOwnProperty(key)) {
+        // Skip circular references to prevent infinite recursion
+        if (input[key] === input) {
+          continue;
+        }
         sanitized[key] = sanitizeInput(input[key]);
       }
     }
@@ -175,6 +237,10 @@ export class RateLimiter {
   private cleanupInterval: NodeJS.Timeout;
   
   constructor(private maxRequests: number, private windowMs: number) {
+    // Handle invalid parameters
+    this.maxRequests = Math.max(1, this.maxRequests || 5);
+    this.windowMs = Math.max(0, this.windowMs || 60000);
+    
     // Clean up expired entries every 5 minutes
     this.cleanupInterval = setInterval(() => this.cleanup(), 5 * 60 * 1000);
   }
@@ -226,13 +292,25 @@ export class RateLimiter {
  * Cache utility for API responses
  */
 export class ApiCache {
-  private cache: Map<string, { data: any; expiry: number }> = new Map();
+  private cache: Map<string, { data: any; expiry: number; accessCount: number }> = new Map();
+  private maxEntries: number;
+  
+  constructor(maxEntries: number = 1000) {
+    this.maxEntries = maxEntries;
+  }
   
   set(key: string, data: any, ttlMs: number): void {
     if (!ttlMs || ttlMs <= 0 || isNaN(ttlMs) || !isFinite(ttlMs)) return;
+    
+    // Implement LRU eviction if cache is full
+    if (this.cache.size >= this.maxEntries) {
+      this.evictLeastRecentlyUsed();
+    }
+    
     this.cache.set(key, {
       data,
-      expiry: Date.now() + ttlMs
+      expiry: Date.now() + ttlMs,
+      accessCount: 0
     });
   }
   
@@ -245,6 +323,8 @@ export class ApiCache {
       return null;
     }
     
+    // Update access count for LRU
+    item.accessCount++;
     return item.data;
   }
   
@@ -268,4 +348,145 @@ export class ApiCache {
     }
     return count;
   }
+  
+  private evictLeastRecentlyUsed(): void {
+    let leastUsedKey: string | null = null;
+    let minAccessCount = Infinity;
+    
+    for (const [key, item] of this.cache) {
+      if (item.accessCount < minAccessCount) {
+        minAccessCount = item.accessCount;
+        leastUsedKey = key;
+      }
+    }
+    
+    if (leastUsedKey) {
+      this.cache.delete(leastUsedKey);
+    }
+  }
 }
+
+/**
+ * Request ID generator for tracking API requests
+ */
+export class RequestIdGenerator {
+  private static counter = 0;
+  
+  static generate(): string {
+    const timestamp = Date.now().toString(36);
+    const random = Math.random().toString(36).substring(2, 8);
+    const count = (++this.counter).toString(36);
+    return `${timestamp}-${random}-${count}`;
+  }
+}
+
+/**
+ * Response time tracker
+ */
+export class ResponseTimeTracker {
+  private startTime: number;
+  
+  constructor() {
+    this.startTime = Date.now();
+  }
+  
+  getDuration(): number {
+    return Date.now() - this.startTime;
+  }
+  
+  getDurationMs(): string {
+    return `${this.getDuration()}ms`;
+  }
+}
+
+/**
+ * Data transformer utility
+ */
+export const transformData = <T, R>(
+  data: T[],
+  transformer: (item: T) => R,
+  options: { filter?: (item: T) => boolean; sort?: (a: T, b: T) => number } = {}
+): R[] => {
+  let result = data;
+  
+  if (options.filter) {
+    result = result.filter(options.filter);
+  }
+  
+  if (options.sort) {
+    result = [...result].sort(options.sort);
+  }
+  
+  return result.map(transformer);
+};
+
+/**
+ * Field validator utility
+ */
+export const validateField = (
+  value: any,
+  rules: {
+    required?: boolean;
+    type?: 'string' | 'number' | 'boolean' | 'array' | 'object';
+    minLength?: number;
+    maxLength?: number;
+    min?: number;
+    max?: number;
+    pattern?: RegExp;
+    enum?: any[];
+  }
+): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = [];
+  
+  // Required validation
+  if (rules.required && (value === undefined || value === null || value === '')) {
+    errors.push('Field is required');
+    return { isValid: false, errors };
+  }
+  
+  // Skip further validation if field is optional and empty
+  if (!rules.required && (value === undefined || value === null || value === '')) {
+    return { isValid: true, errors: [] };
+  }
+  
+  // Type validation
+  if (rules.type) {
+    const actualType = Array.isArray(value) ? 'array' : typeof value;
+    if (actualType !== rules.type) {
+      errors.push(`Expected type ${rules.type}, got ${actualType}`);
+    }
+  }
+  
+  // String validations
+  if (typeof value === 'string') {
+    if (rules.minLength && value.length < rules.minLength) {
+      errors.push(`Minimum length is ${rules.minLength}`);
+    }
+    if (rules.maxLength && value.length > rules.maxLength) {
+      errors.push(`Maximum length is ${rules.maxLength}`);
+    }
+    if (rules.pattern && !rules.pattern.test(value)) {
+      errors.push('Invalid format');
+    }
+  }
+  
+  // Number validations
+  if (typeof value === 'number') {
+    if (rules.min !== undefined && value < rules.min) {
+      errors.push(`Minimum value is ${rules.min}`);
+    }
+    if (rules.max !== undefined && value > rules.max) {
+      errors.push(`Maximum value is ${rules.max}`);
+    }
+  }
+  
+  // Enum validation
+  if (rules.enum && !rules.enum.includes(value)) {
+    errors.push(`Value must be one of: ${rules.enum.join(', ')}`);
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  };
+};

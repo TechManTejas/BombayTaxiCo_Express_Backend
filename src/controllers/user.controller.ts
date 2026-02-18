@@ -60,15 +60,31 @@ export const registerOrSignInUser = async (
   try {
     const { mobile_no, email_id, name } = req.body;
 
+    // Input validation
+    if (!mobile_no || !name) {
+      res.status(400).json({ message: "Mobile number and name are required." });
+      return;
+    }
+
+    // Validate mobile number format
+    if (!/^\d{10}$/.test(mobile_no)) {
+      res.status(400).json({ message: "Invalid mobile number format." });
+      return;
+    }
+
+    // Validate email format if provided
+    if (email_id && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email_id)) {
+      res.status(400).json({ message: "Invalid email format." });
+      return;
+    }
+
     const existingUser = await User.findOne({
       $or: [{ mobile_no }, { email_id }],
     });
 
-    if (email_id) {
-      if (existingUser) {
-        res.status(409).json({ message: "User already exists, please login." });
-        return;
-      }
+    if (existingUser) {
+      res.status(409).json({ message: "User already exists, please login." });
+      return;
     }
 
     const otp = generateOTP();
@@ -106,9 +122,19 @@ export const verifyOTP = async (req: Request, res: Response): Promise<void> => {
   const email_id = otpEntry.email_id
   const name = otpEntry.name
 
-  // Create user and sign them in
-  const newUser = new User({ mobile_no, email_id, name });
-  await newUser.save();
+  // Check if user already exists before creating
+  const existingUser = await User.findOne({
+    $or: [{ mobile_no }, { email_id }],
+  });
+
+  let newUser;
+  if (existingUser) {
+    newUser = existingUser;
+  } else {
+    // Create user and sign them in
+    newUser = new User({ mobile_no, email_id, name });
+    await newUser.save();
+  }
 
   // Generate JWT token
   const token = jwt.sign(

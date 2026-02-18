@@ -205,6 +205,20 @@ export const getBookingStatusCounts = async (req: Request, res: Response) => {
 export const assignTaxiDriver = async (req: Request, res: Response) => {
   const { booking_id, driver_id, taxi_id } = req.body;
 
+  // Input validation
+  if (!booking_id || !driver_id || !taxi_id) {
+    res.status(400).json({ message: "Booking ID, Driver ID, and Taxi ID are required." });
+    return;
+  }
+
+  // Validate MongoDB ObjectID format
+  if (!mongoose.Types.ObjectId.isValid(booking_id) || 
+      !mongoose.Types.ObjectId.isValid(driver_id) || 
+      !mongoose.Types.ObjectId.isValid(taxi_id)) {
+    res.status(400).json({ message: "Invalid ID format." });
+    return;
+  }
+
   try {
     // Start a transaction
     const session = await Booking.startSession();
@@ -320,6 +334,20 @@ export const assignTaxiDriver = async (req: Request, res: Response) => {
 
 export const reassignTaxiDriver = async (req: Request, res: Response) => {
   const { booking_id, driver_id, taxi_id } = req.body;
+
+  // Input validation
+  if (!booking_id || !driver_id || !taxi_id) {
+    res.status(400).json({ message: "Booking ID, Driver ID, and Taxi ID are required." });
+    return;
+  }
+
+  // Validate MongoDB ObjectID format
+  if (!mongoose.Types.ObjectId.isValid(booking_id) || 
+      !mongoose.Types.ObjectId.isValid(driver_id) || 
+      !mongoose.Types.ObjectId.isValid(taxi_id)) {
+    res.status(400).json({ message: "Invalid ID format." });
+    return;
+  }
 
   try {
     // Start a transaction
@@ -490,6 +518,18 @@ export const reassignTaxiDriver = async (req: Request, res: Response) => {
 export const startTrip = async (req: Request, res: Response) => {
   const { booking_id } = req.body;
 
+  // Input validation
+  if (!booking_id) {
+    res.status(400).json({ message: "Booking ID is required." });
+    return;
+  }
+
+  // Validate MongoDB ObjectID format
+  if (!mongoose.Types.ObjectId.isValid(booking_id)) {
+    res.status(400).json({ message: "Invalid booking ID format." });
+    return;
+  }
+
   try {
     // Start a transaction
     const session = await Booking.startSession();
@@ -551,6 +591,18 @@ export const startTrip = async (req: Request, res: Response) => {
 
 export const endTrip = async (req: Request, res: Response) => {
   const { booking_id } = req.body;
+
+  // Input validation
+  if (!booking_id) {
+    res.status(400).json({ message: "Booking ID is required." });
+    return;
+  }
+
+  // Validate MongoDB ObjectID format
+  if (!mongoose.Types.ObjectId.isValid(booking_id)) {
+    res.status(400).json({ message: "Invalid booking ID format." });
+    return;
+  }
 
   try {
     // Start a transaction

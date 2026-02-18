@@ -63,9 +63,9 @@ export const createPaginatedResponse = <T>(
   total: number,
   message: string = 'Data retrieved successfully'
 ): PaginatedResponse<T> => {
-  const safePageSize = (typeof pageSize === 'number' && !isNaN(pageSize) && pageSize > 0) ? pageSize : 10;
-  const safeTotal = (typeof total === 'number' && !isNaN(total) && total > 0) ? total : 0;
-  const safePage = (typeof page === 'number' && !isNaN(page) && page > 0) ? page : 1;
+  const safePageSize = (typeof pageSize === 'number' && !isNaN(pageSize) && isFinite(pageSize) && pageSize > 0) ? pageSize : 10;
+  const safeTotal = (typeof total === 'number' && !isNaN(total) && isFinite(total) && total > 0) ? total : 0;
+  const safePage = (typeof page === 'number' && !isNaN(page) && isFinite(page) && page > 0) ? page : 1;
   const totalPages = Math.ceil(safeTotal / safePageSize);
   
   return {
@@ -196,7 +196,7 @@ export class ApiCache {
   private cache: Map<string, { data: any; expiry: number }> = new Map();
   
   set(key: string, data: any, ttlMs: number): void {
-    if (!ttlMs || ttlMs <= 0 || isNaN(ttlMs)) return;
+    if (!ttlMs || ttlMs <= 0 || isNaN(ttlMs) || !isFinite(ttlMs)) return;
     this.cache.set(key, {
       data,
       expiry: Date.now() + ttlMs

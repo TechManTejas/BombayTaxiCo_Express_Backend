@@ -8,6 +8,7 @@ export interface ApiResponse<T = any> {
   data?: T;
   error?: string;
   timestamp: string;
+  statusCode?: number;
 }
 
 export interface PaginationInfo {
@@ -28,12 +29,14 @@ export interface PaginatedResponse<T> extends ApiResponse<T[]> {
  */
 export const createSuccessResponse = <T>(
   data: T,
-  message: string = 'Operation completed successfully'
+  message: string = 'Operation completed successfully',
+  statusCode: number = 200
 ): ApiResponse<T> => {
   return {
     success: true,
     message,
     data,
+    statusCode,
     timestamp: new Date().toISOString()
   };
 };
@@ -43,12 +46,14 @@ export const createSuccessResponse = <T>(
  */
 export const createErrorResponse = (
   error: string,
-  message: string = 'Operation failed'
+  message: string = 'Operation failed',
+  statusCode: number = 500
 ): ApiResponse => {
   return {
     success: false,
     message,
     error,
+    statusCode,
     timestamp: new Date().toISOString()
   };
 };
@@ -64,9 +69,9 @@ export const createPaginatedResponse = <T>(
   message: string = 'Data retrieved successfully'
 ): PaginatedResponse<T> => {
   const safePageSize = (typeof pageSize === 'number' && !isNaN(pageSize) && isFinite(pageSize) && pageSize > 0) ? pageSize : 10;
-  const safeTotal = (typeof total === 'number' && !isNaN(total) && isFinite(total) && total > 0) ? total : 0;
+  const safeTotal = (typeof total === 'number' && !isNaN(total) && isFinite(total) && total >= 0) ? total : 0;
   const safePage = (typeof page === 'number' && !isNaN(page) && isFinite(page) && page > 0) ? page : 1;
-  const totalPages = Math.ceil(safeTotal / safePageSize);
+  const totalPages = safePageSize > 0 ? Math.ceil(safeTotal / safePageSize) : 0;
   
   return {
     success: true,
@@ -130,6 +135,11 @@ export const validateRequestData = (
  * Sanitizes user input to prevent XSS
  */
 export const sanitizeInput = (input: any): any => {
+  // Handle null/undefined inputs
+  if (input === null || input === undefined) {
+    return input;
+  }
+  
   if (typeof input === 'string') {
     return input
       .replace(/&/g, '&amp;')
@@ -162,8 +172,12 @@ export const sanitizeInput = (input: any): any => {
  */
 export class RateLimiter {
   private requests: Map<string, number[]> = new Map();
+  private cleanupInterval: NodeJS.Timeout;
   
-  constructor(private maxRequests: number, private windowMs: number) {}
+  constructor(private maxRequests: number, private windowMs: number) {
+    // Clean up expired entries every 5 minutes
+    this.cleanupInterval = setInterval(() => this.cleanup(), 5 * 60 * 1000);
+  }
   
   isAllowed(identifier: string): boolean {
     const now = Date.now();
@@ -186,6 +200,25 @@ export class RateLimiter {
   
   reset(identifier: string): void {
     this.requests.delete(identifier);
+  }
+  
+  cleanup(): void {
+    const now = Date.now();
+    for (const [key, requests] of this.requests) {
+      const validRequests = requests.filter(timestamp => now - timestamp < this.windowMs);
+      if (validRequests.length === 0) {
+        this.requests.delete(key);
+      } else {
+        this.requests.set(key, validRequests);
+      }
+    }
+  }
+  
+  destroy(): void {
+    if (this.cleanupInterval) {
+      clearInterval(this.cleanupInterval);
+    }
+    this.requests.clear();
   }
 }
 

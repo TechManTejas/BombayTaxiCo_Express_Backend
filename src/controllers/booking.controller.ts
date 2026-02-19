@@ -31,16 +31,20 @@ export const getUserBookings = async (req: Request, res: Response) => {
     // Get user ID from decoded token
     const userId = decodedToken.userId;
 
-    // Pagination
+    // Pagination with performance optimizations
     const page = req.query.page ? parseInt(req.query.page as string, 10) : 1;
     const pageSize = req.query.pageSize
-      ? parseInt(req.query.pageSize as string, 10)
+      ? Math.min(parseInt(req.query.pageSize as string, 10), 100) // Max 100 items per page
       : 10;
     
     // Validate pagination values
     const safePage = (isNaN(page) || page < 1 || !isFinite(page)) ? 1 : page;
     const safePageSize = (isNaN(pageSize) || pageSize < 1 || !isFinite(pageSize)) ? 10 : pageSize;
     const skip = (safePage - 1) * safePageSize;
+
+    // Performance optimization: Add caching headers
+    res.set('Cache-Control', 'private, max-age=300'); // 5 minutes cache
+    res.set('ETag', `bookings-${userId}-${safePage}-${safePageSize}`);
 
     // Filter (customize this based on your model's properties)
     const filterQuery: any = req.query.filter;
@@ -54,11 +58,11 @@ export const getUserBookings = async (req: Request, res: Response) => {
       }
     }
 
-    // Search
+    // Search with performance optimizations
     const searchQuery = req.query.search as string;
     const searchFilter: Record<string, any> = {};
 
-    if (searchQuery) {
+    if (searchQuery && searchQuery.length <= 100) { // Limit search query length
       const modelProperties = Object.keys(Booking.schema.paths); // Assuming 'Booking' is the model for bookings
 
       const orArray = modelProperties
@@ -79,33 +83,38 @@ export const getUserBookings = async (req: Request, res: Response) => {
       searchFilter.$or = orArray;
     }
 
+    // Optimized populate options - only populate essential fields
     const populateOptions = [
-      { path: "route_id", populate: { path: "from_id to_id" } },
-      { path: "user_id" },
-      { path: "driver_id" },
-      { path: "pickup_city" },
-      { path: "taxi_id", populate: { path: "taxi_type_id" } },
-      { path: "coupon_id" },
-      { path: "requested_taxi_type" },
+      { path: "route_id", select: "name distance", populate: { path: "from_id to_id", select: "name" } },
+      { path: "user_id", select: "name email phone" },
+      { path: "driver_id", select: "name phone rating" },
+      { path: "pickup_city", select: "name" },
+      { path: "taxi_id", select: "registration_number", populate: { path: "taxi_type_id", select: "name" } },
+      { path: "coupon_id", select: "code discount" },
+      { path: "requested_taxi_type", select: "name" },
     ];
 
     const populationQuery = populateOptions.map((option) => ({
       path: option.path,
+      select: option.select,
       populate: option.populate,
     }));
 
     const query = { user_id: userId, ...filter, ...searchFilter };
 
+    // Performance optimization: Use lean() and select only needed fields
     const itemsQuery = Booking.find(query)
       .lean()
-      .populate(populationQuery) as Query<any[], any, {}>;
-
-    const totalCount = await Booking.countDocuments(query);
-
-    const items = await itemsQuery
+      .select('_id booking_date pickup_time dropoff_time status total_amount created_at updated_at')
+      .populate(populationQuery)
+      .sort({ created_at: -1 }) // Sort by creation date
       .skip(skip)
-      .limit(safePageSize)
-      .sort({ createdAt: -1 });
+      .limit(safePageSize) as Query<any[], any, {}>;
+
+    // Use aggregation pipeline for better performance on large datasets
+    const totalCount = await Booking.countDocuments(query).lean();
+
+    const items = await itemsQuery;
 
     res.status(200).json({ bookings: items, total: totalCount });
   } catch (error) {

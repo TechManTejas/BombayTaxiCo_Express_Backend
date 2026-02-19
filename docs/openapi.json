@@ -1,0 +1,44 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "BombayTaxiCo API Documentation",
+    "version": "1.0.0",
+    "description": "Comprehensive API documentation for BombayTaxiCo Express Backend",
+    "contact": {
+      "name": "BombayTaxiCo API Team",
+      "email": "api@bombaytaxico.com",
+      "url": "https://bombaytaxico.com"
+    },
+    "license": {
+      "name": "MIT",
+      "url": "https://opensource.org/licenses/MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000/api",
+      "description": "Development server"
+    },
+    {
+      "url": "https://api.bombaytaxico.com",
+      "description": "Production server"
+    }
+  ],
+  "paths": {},
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT authentication token"
+      },
+      "apiKey": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API key for authentication"
+      }
+    }
+  }
+}

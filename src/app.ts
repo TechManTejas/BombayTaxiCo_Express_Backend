@@ -36,8 +36,7 @@ import settingsRoutes from './routes/settings.routes';
 import paymentRoutes from './routes/payments.routes';
 import pricesRoutes from './routes/prices.routes';
 import invoiceRoutes from './routes/invoices.routes';
-import emailRoutes from './routes/emails.routes';
-import fareQuoteRoutes from './routes/fare-quote.routes'
+import emailRoutes from './routes/emails.routes'
 import startBookingSMSCron from './crons/booking_sms';
 import { endTripSMSCron, startTripSMSCron } from './crons/start_end_trip';
 
@@ -75,7 +74,6 @@ app.use('/payments', paymentRoutes);
 app.use('/prices', pricesRoutes);
 app.use('/invoices', invoiceRoutes);
 app.use('/emails', emailRoutes);
-app.use('/fare-quotes', fareQuoteRoutes);
 
 
 app.get('/.well-known/pki-validation/2DC175DFC7B30A058467A803ADCCFD76.txt', (req, res) => {

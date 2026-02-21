@@ -1,0 +1,48 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run smoke test suites
+        run: |
+          npm test -- --runInBand \
+            src/__test__/fare-quote.validators.f2p.test.ts \
+            src/__test__/fare-quote.calculator.f2p.test.ts \
+            src/__test__/fare-quote.service.f2p.test.ts \
+            src/__test__/fare-quote.pipeline.p2p.test.ts \
+            src/__test__/intercity-addon-quote.validators.f2p.test.ts \
+            src/__test__/intercity-addon-quote.calculator.f2p.test.ts \
+            src/__test__/intercity-addon-quote.service.f2p.test.ts \
+            src/__test__/intercity-addon-quote.pipeline.p2p.test.ts
+
+      - name: Typecheck (advisory)
+        continue-on-error: true
+        run: npm run build

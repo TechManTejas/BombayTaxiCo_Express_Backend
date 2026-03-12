@@ -1,9 +1,8 @@
 import 'dotenv/config';
 import cors from 'cors';
 import express from 'express';
-import mongoose from './db';
+import mongoose, { connectToDatabase } from './db';
 import fs from 'fs';
-import https from "https"
 import http from "http";
 import bodyParser from 'body-parser';
 
@@ -105,11 +104,19 @@ app.get('/.well-known/pki-validation/2DC175DFC7B30A058467A803ADCCFD76.txt', (req
 // Create an HTTP server
 const server = http.createServer(app);
 
-startBookingSMSCron()
-startTripSMSCron()
-endTripSMSCron()
+const bootstrap = async () => {
+  await connectToDatabase();
 
+  startBookingSMSCron();
+  startTripSMSCron();
+  endTripSMSCron();
 
-server.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT} with SSL`);
+  server.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+  });
+};
+
+bootstrap().catch((error) => {
+  console.error('Failed to bootstrap application:', error);
+  process.exit(1);
 });

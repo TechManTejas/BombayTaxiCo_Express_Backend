@@ -1,24 +1,25 @@
 import mongoose from 'mongoose';
 import { createStaffUserIfNotExists } from './controllers/admin.controller';
 
-const MONGODB_URI = `${process.env.MONGODB_URI}` || 'default_connection_string';
+const MONGODB_URI = process.env.MONGODB_URI || 'default_connection_string';
 
 // Enhanced connection options with connection pooling
 const connectionOptions = {
   maxPoolSize: 10, // Maintain up to 10 socket connections
   serverSelectionTimeoutMS: 5000, // Keep trying to send operations for 5 seconds
   socketTimeoutMS: 45000, // Close sockets after 45 seconds of inactivity
-  bufferMaxEntries: 0, // Disable mongoose buffering
   bufferCommands: false, // Disable mongoose buffering
   retryWrites: true, // Retry write operations if they fail
   retryReads: true, // Retry read operations if they fail
-  readPreference: 'primary', // Prefer primary reads
+  readPreference: 'primary' as const, // Prefer primary reads
   writeConcern: {
-    w: 'majority',
+    w: 'majority' as const,
     j: true,
-    wtimeout: 10000
+    wtimeoutMS: 10000
   }
 };
+
+let connectionPromise: Promise<void> | null = null;
 
 // Connection retry logic
 const connectWithRetry = async (maxRetries = 5, retryDelay = 5000): Promise<void> => {
@@ -47,8 +48,13 @@ const connectWithRetry = async (maxRetries = 5, retryDelay = 5000): Promise<void
   }
 };
 
-// Initialize connection with retry
-connectWithRetry();
+export const connectToDatabase = (maxRetries = 5, retryDelay = 5000): Promise<void> => {
+  if (!connectionPromise) {
+    connectionPromise = connectWithRetry(maxRetries, retryDelay);
+  }
+
+  return connectionPromise;
+};
 
 const db = mongoose.connection;
 
